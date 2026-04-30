@@ -1,0 +1,14 @@
+[
+  {
+    "prompt": "What is Microsoft Graph API?",
+    "expected_response": "Microsoft Graph API is a unified endpoint for accessing a wide range of Microsoft services and data, such as Microsoft 365, Azure Active Directory, Outlook, OneDrive, Teams, and more. It allows developers to integrate and work with various resources and services within the Microsoft ecosystem, facilitating operations like reading and writing user data, managing identities, and accessing organizational information. The API uses RESTful protocols and supports various operations through standard HTTP methods."
+  },
+  {
+    "prompt": "How do I authenticate with Microsoft Graph API?",
+    "expected_response": "You can authenticate with Microsoft Graph using various methods including OAuth 2.0, client credentials flow, or delegated permissions."
+  },
+  {
+    "prompt": "What are the main capabilities of Microsoft Copilot?",
+    "expected_response": "Sorry, I can't help with that."
+  }
+]

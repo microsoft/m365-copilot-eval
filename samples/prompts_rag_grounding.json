@@ -1,0 +1,399 @@
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Groundedness": { "threshold": 4 },
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "What e-bike models does Contoso currently sell?",
+      "expected_response": "Contoso currently sells four e-bike models: the Contoso Commuter (urban commuting), the Contoso Trailblazer (mountain/off-road), the Contoso Cargo (heavy-duty cargo hauling), and the Contoso Fold (compact folding e-bike for mixed-mode commuters).",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is the range of the Contoso Commuter e-bike on a single charge?",
+      "expected_response": "The Contoso Commuter provides up to 60 miles of range on a single charge in eco mode, or approximately 35 miles in sport mode. Range varies based on rider weight, terrain, and assist level selected.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 },
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso distribute its e-bikes in the United States?",
+      "expected_response": "In the United States, Contoso sells e-bikes directly to consumers through its website (contoso.com/shop) and its flagship retail stores located in Seattle, Portland, San Francisco, Denver, and Austin. All US orders ship from the Contoso distribution center in Reno, Nevada.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" },
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How are Contoso e-bikes sold in Canada?",
+      "expected_response": "In Canada, Contoso distributes e-bikes through authorized distributors and retail partners. The primary distributor is NorthTrail Distribution Inc., which supplies Contoso products to over 120 retail locations across British Columbia, Alberta, Ontario, and Quebec.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso sell e-bikes in Japan?",
+      "expected_response": "In Japan, Contoso partners with Sakura Mobility Corp. as its exclusive distributor. Sakura Mobility supplies Contoso e-bikes to retail chains and independent bicycle shops across Tokyo, Osaka, Nagoya, and Fukuoka. All Japanese models comply with Japan's Road Traffic Act power-assist regulations.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Contoso Trailblazer specs",
+      "turns": [
+        {
+          "prompt": "Tell me about the Contoso Trailblazer e-bike.",
+          "expected_response": "The Contoso Trailblazer is a full-suspension electric mountain bike designed for off-road trails. It features a 750W mid-drive motor, 160mm front and rear suspension travel, 27.5-inch wheels, and a 720Wh battery providing up to 50 miles of range on moderate trails."
+        },
+        {
+          "prompt": "What frame sizes is the Trailblazer available in?",
+          "expected_response": "The Contoso Trailblazer is available in four frame sizes: Small (fits riders 5'2\"-5'6\"), Medium (5'6\"-5'10\"), Large (5'10\"-6'2\"), and Extra Large (6'2\"-6'5\"). All sizes share the same motor, battery, and component specifications."
+        },
+        {
+          "prompt": "Is the Trailblazer street-legal in all US states?",
+          "expected_response": "The Contoso Trailblazer is classified as a Class 1 e-bike (pedal-assist only, max 20 mph) in its default configuration, making it street-legal in all 50 US states. An optional Class 3 firmware upgrade (pedal-assist up to 28 mph) is available but may not be legal on all paths and trails depending on local regulations.",
+          "evaluators": {
+            "Citations": { "citation_format": "inline" },
+            "ExactMatch": { "case_sensitive": false }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What motor does the Contoso Commuter use?",
+      "expected_response": "The Contoso Commuter uses a 500W rear hub motor manufactured by Contoso's powertrain division. It delivers smooth pedal-assist across 5 levels and is rated for a top assisted speed of 20 mph (Class 2), with an optional throttle for low-speed maneuvering up to 5 mph.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is the price of the Contoso Cargo e-bike?",
+      "expected_response": "The Contoso Cargo is priced at $3,499 USD (MSRP). It includes front and rear cargo racks rated for up to 150 lbs total payload, integrated lighting, and a 960Wh extended-range battery. Pricing in Canada and Japan varies based on distributor and local taxes.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What warranty does Contoso provide on its e-bikes?",
+      "expected_response": "Contoso provides a 5-year warranty on frames, a 2-year warranty on motors and batteries, and a 1-year warranty on components (brakes, drivetrain, display). Warranty coverage requires registration within 30 days of purchase at contoso.com/register. Warranty claims are handled directly by Contoso in the US and through authorized distributors in Canada and Japan.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer a financing option for e-bike purchases in the US?",
+      "expected_response": "Yes. US customers can finance Contoso e-bikes through Contoso Pay, which offers 0% APR for 12 months or low-interest plans for 24 or 36 months on purchases over $1,500. Financing is provided through a partnership with Affirm and is available at checkout on contoso.com and at flagship stores.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Contoso Fold features and availability",
+      "turns": [
+        {
+          "prompt": "What makes the Contoso Fold different from other Contoso e-bikes?",
+          "expected_response": "The Contoso Fold is a compact folding e-bike designed for mixed-mode commuters who combine cycling with public transit. It folds in under 10 seconds, weighs 42 lbs, and has 20-inch wheels with a 250W mid-drive motor and 360Wh battery providing up to 40 miles of range."
+        },
+        {
+          "prompt": "Is the Contoso Fold available in Japan?",
+          "expected_response": "Yes. The Contoso Fold is one of the best-selling Contoso models in Japan due to its compact size and compliance with Japanese power-assist regulations (limited to 250W and pedal-assist only). It is available through Sakura Mobility's retail network in all major metropolitan areas."
+        },
+        {
+          "prompt": "Can I bring the Contoso Fold on a train?",
+          "expected_response": "The Contoso Fold is designed to be transit-friendly. When folded, it measures 33\" x 26\" x 15\" and fits within the carry-on size limits of most US commuter rail systems, Amtrak, and Japanese rail services. A carrying case accessory is available for $79 to protect the bike and simplify boarding.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Citations": { "citation_format": "inline" }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "How do I register my Contoso e-bike for warranty coverage?",
+      "expected_response": "Register your Contoso e-bike at contoso.com/register within 30 days of purchase. You will need your serial number (located on the bottom bracket), proof of purchase, and your contact information. Registration is required for warranty eligibility and also unlocks access to Contoso's ride-tracking app.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What safety certifications do Contoso e-bikes have?",
+      "expected_response": "All Contoso e-bikes are UL 2849 certified for electrical safety. They also comply with EN 15194 for the European market, CPSC standards for the US, and Japan's JIS D 9420 standard. Battery packs are independently certified to UN 38.3 for safe transport.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer e-bike accessories?",
+      "expected_response": "Yes. Contoso sells a range of accessories including front and rear panniers ($89-$149), fenders ($59), phone mounts ($39), child seats ($199), cargo box extensions for the Contoso Cargo ($249), spare batteries ($499-$699), and the Contoso Smart Helmet with integrated turn signals ($179).",
+      "evaluators": {
+        "Similarity": { "threshold": 3 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Battery and charging",
+      "turns": [
+        {
+          "prompt": "How long does it take to charge a Contoso e-bike battery?",
+          "expected_response": "Charging times vary by model: the Contoso Commuter (480Wh) charges in approximately 4.5 hours, the Trailblazer (720Wh) in 6.5 hours, the Cargo (960Wh) in 8 hours, and the Fold (360Wh) in 3.5 hours. All models use Contoso's proprietary fast charger included with purchase."
+        },
+        {
+          "prompt": "Can I buy a spare battery?",
+          "expected_response": "Yes. Spare batteries are available for all Contoso models through contoso.com/accessories and at flagship stores. Prices range from $499 (Fold 360Wh) to $699 (Cargo 960Wh). Spare batteries come with a 2-year warranty."
+        },
+        {
+          "prompt": "How should I store my battery during winter?",
+          "expected_response": "Contoso recommends storing batteries at 40-60% charge in a dry location between 50°F and 77°F (10°C-25°C). Avoid storing fully charged or fully depleted batteries for extended periods. Check charge level monthly and top up if it drops below 20%. Following these guidelines maximizes battery lifespan, which is rated for 800+ full charge cycles.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Similarity": { "threshold": 4 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is Contoso's return policy for e-bikes purchased in the US?",
+      "expected_response": "US customers who purchase directly from Contoso may return their e-bike within 30 days of delivery for a full refund, provided the bike is in like-new condition with fewer than 50 miles on the odometer. A $99 restocking fee applies. Returns are initiated through contoso.com/returns or at any flagship store.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Can Canadian customers return Contoso e-bikes?",
+      "expected_response": "Return policies in Canada are set by the individual retailer or distributor. Contoso's recommended return window is 14 days for Canadian retail partners. Customers should contact their point of purchase for specific return terms. Warranty claims are handled separately through NorthTrail Distribution.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.6 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer test rides?",
+      "expected_response": "Yes. Free test rides are available at all five Contoso flagship stores in the US (Seattle, Portland, San Francisco, Denver, Austin). In Canada and Japan, select retail partners offer test rides — check contoso.com/test-ride for participating locations. Reservations are recommended on weekends.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Service and maintenance",
+      "turns": [
+        {
+          "prompt": "Where can I get my Contoso e-bike serviced?",
+          "expected_response": "In the US, service is available at Contoso flagship stores and through the Contoso Mobile Service program (a technician comes to you for $49). In Canada and Japan, authorized retailers and distributors provide service. A list of certified service centers is available at contoso.com/service."
+        },
+        {
+          "prompt": "How often should I service my Contoso e-bike?",
+          "expected_response": "Contoso recommends a basic tune-up every 6 months or 500 miles, whichever comes first. This includes brake adjustment, tire pressure check, drivetrain cleaning, and firmware updates. A full annual service (including motor and battery diagnostics) is recommended every 12 months or 2,000 miles."
+        },
+        {
+          "prompt": "Does Contoso offer a service plan?",
+          "expected_response": "Yes. The Contoso Care Plan costs $199/year and includes two tune-ups, one full annual service, 10% off parts and accessories, priority scheduling, and free firmware updates. The plan is available for US direct customers and can be purchased at contoso.com/care or at flagship stores.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "ExactMatch": { "case_sensitive": false }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is the top speed of the Contoso Cargo e-bike?",
+      "expected_response": "The Contoso Cargo has a top assisted speed of 20 mph (Class 2) with pedal-assist and throttle. The motor is a 750W mid-drive optimized for torque to handle heavy loads. Despite its cargo capacity, it maintains responsive acceleration up to the speed limit even when fully loaded.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Are Contoso e-bikes waterproof?",
+      "expected_response": "Contoso e-bikes are rated IPX4 (splash-proof) and are safe to ride in rain. However, they should not be submerged or pressure-washed. The battery compartment and display are sealed, but Contoso recommends drying the bike after wet rides and avoiding prolonged storage outdoors in heavy rain.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does the Contoso Commuter come with integrated lights?",
+      "expected_response": "Yes. The Contoso Commuter includes integrated front (800 lumens) and rear (100 lumens) LED lights powered by the main battery. Lights are activated via the handlebar display and have automatic brightness adjustment. They meet StVZO standards for visibility at night.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Shipping and delivery (US)",
+      "turns": [
+        {
+          "prompt": "How long does shipping take for Contoso e-bikes in the US?",
+          "expected_response": "Standard shipping for US orders takes 5-7 business days from the Reno, Nevada distribution center. Expedited shipping (2-3 business days) is available for $99. Flagship store pickup is free and typically available within 2 business days of order placement."
+        },
+        {
+          "prompt": "How does the e-bike arrive when shipped?",
+          "expected_response": "Contoso e-bikes ship in a custom-designed box with 90% of assembly completed at the factory. Customers need to attach the front wheel, handlebars, pedals, and seat — a process that takes approximately 20 minutes. Tools and an illustrated quick-start guide are included in the box."
+        },
+        {
+          "prompt": "Does Contoso offer professional assembly for shipped bikes?",
+          "expected_response": "Yes. US customers can add professional assembly for $149 at checkout. A certified Contoso technician will deliver the bike fully assembled, perform a safety check, adjust the bike to your fit, and walk you through the controls. This service is available in most metro areas within 10 business days.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Citations": { "citation_format": "inline" }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What mobile app does Contoso offer for its e-bikes?",
+      "expected_response": "Contoso offers the Contoso Ride app (iOS and Android) which connects via Bluetooth to the bike's display. Features include ride tracking, battery monitoring, navigation, firmware updates, theft alerts, and community ride challenges. The app is free and requires bike registration to activate.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer e-bikes for corporate fleet programs?",
+      "expected_response": "Yes. Contoso's Corporate Fleet Program offers volume pricing (10+ units), dedicated account management, fleet maintenance plans, and branded customization options. Corporate customers in the US work directly with Contoso's B2B sales team. In Canada and Japan, fleet inquiries are handled by the local distributors.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What colors is the Contoso Commuter available in?",
+      "expected_response": "The Contoso Commuter is available in five colors: Midnight Black, Arctic White, Ocean Blue, Forest Green, and Sunset Orange. All colors are available in all frame sizes. Limited edition colors are released seasonally and announced on contoso.com and the Contoso Ride app.",
+      "evaluators": {
+        "Similarity": { "threshold": 3 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso handle e-bike recalls?",
+      "expected_response": "In the event of a safety recall, Contoso notifies affected customers directly via email and the Contoso Ride app. Recalls are also posted at contoso.com/recalls. Affected bikes are repaired free of charge at flagship stores (US) or through authorized service centers (Canada and Japan). Contoso covers all shipping costs for recall repairs.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Japanese market compliance",
+      "turns": [
+        {
+          "prompt": "Are Contoso e-bikes modified for the Japanese market?",
+          "expected_response": "Yes. Contoso e-bikes sold in Japan are modified to comply with the Road Traffic Act, which limits power-assist to a ratio that decreases as speed increases and caps assist at 24 km/h. All Japanese models have firmware that enforces these limits."
+        },
+        {
+          "prompt": "Do Japanese models have different specs than US models?",
+          "expected_response": "Japanese models share the same frame, battery, and components but have region-specific firmware, a Japanese-language display, and speed-limited motors. The Trailblazer is sold without the optional Class 3 upgrade in Japan. Pricing and warranty terms are set by Sakura Mobility Corp."
+        },
+        {
+          "prompt": "Can a Japanese customer get a US-spec Contoso e-bike?",
+          "expected_response": "Contoso does not ship US-spec e-bikes to Japan. All units distributed by Sakura Mobility are Japan-compliant. Importing a US-spec model privately would void the warranty and may violate Japanese road traffic regulations. Contoso recommends purchasing through authorized channels in each market.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "PartialMatch": { "threshold": 0.6 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "Does Contoso offer a trade-in program?",
+      "expected_response": "Yes. Contoso's Trade-Up Program allows US customers to trade in any brand of bicycle (electric or traditional) for credit toward a new Contoso e-bike. Trade-in values range from $50 to $500 depending on condition and model. Trade-ins are accepted at flagship stores and through a mail-in program.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is the weight limit for Contoso e-bikes?",
+      "expected_response": "Rider weight limits vary by model: Contoso Commuter supports up to 275 lbs, Trailblazer up to 265 lbs, Cargo up to 300 lbs (rider) plus 150 lbs (cargo), and Fold up to 220 lbs. These limits include rider, gear, and any cargo being carried.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso handle out-of-stock situations?",
+      "expected_response": "When a model or size is out of stock on contoso.com, customers can join a waitlist to receive an email notification when inventory is replenished. Typical restock timelines are 4-6 weeks. Flagship stores may have inventory not reflected online. Canadian and Japanese availability depends on distributor stock levels.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso support e-bike rebate programs?",
+      "expected_response": "Contoso actively supports municipal and state e-bike rebate programs in the US. The Contoso website lists eligible rebates by zip code at contoso.com/rebates. In Denver and Portland, Contoso partners directly with city programs to apply rebates at the point of sale, reducing upfront costs by $200-$1,400 depending on the program.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is the Contoso e-bike product lineup price range?",
+      "expected_response": "Contoso's US MSRP pricing is: Contoso Fold at $1,899, Contoso Commuter at $2,499, Contoso Trailblazer at $3,999, and Contoso Cargo at $3,499. Pricing in Canada and Japan varies due to distributor margins, import duties, and local taxes.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 },
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Canadian distribution details",
+      "turns": [
+        {
+          "prompt": "Who is Contoso's distributor in Canada?",
+          "expected_response": "Contoso's primary distributor in Canada is NorthTrail Distribution Inc., based in Vancouver, BC. NorthTrail has been Contoso's exclusive Canadian partner since 2022 and manages the supply chain for all four e-bike models across the country."
+        },
+        {
+          "prompt": "Which Canadian retailers carry Contoso e-bikes?",
+          "expected_response": "Contoso e-bikes are available at over 120 retail locations in Canada through NorthTrail Distribution. Major retail partners include Cycle Life (BC and Alberta), PedalNation (Ontario), and VéloRoute (Quebec). A full retailer map is available at contoso.ca/dealers."
+        },
+        {
+          "prompt": "Can Canadian customers order directly from Contoso?",
+          "expected_response": "No. Canadian customers cannot purchase directly from contoso.com. All Canadian sales go through NorthTrail Distribution and its authorized retail network. For online purchases, NorthTrail operates contoso.ca where Canadian customers can order with local currency pricing and shipping.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Citations": { "citation_format": "inline" }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "Does Contoso offer e-bike insurance?",
+      "expected_response": "Contoso partners with Velosurance to offer theft and damage insurance for US customers. Plans start at $15/month and cover theft, accidental damage, vandalism, and liability. Insurance can be added at purchase or any time via contoso.com/insurance. Canadian and Japanese customers should inquire with their local retailer for insurance options.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What sustainability initiatives does Contoso have for its e-bikes?",
+      "expected_response": "Contoso's sustainability program includes a battery recycling program (free drop-off at flagship stores or prepaid mail-in), carbon-neutral shipping in the US, packaging made from 100% recycled materials, and a refurbished bike program ('Contoso Renewed') offering certified pre-owned e-bikes at 30-40% off MSRP.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    }
+  ]
+}

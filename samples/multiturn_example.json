@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "What is Microsoft Graph?",
+      "expected_response": "Microsoft Graph is a gateway to data and intelligence in Microsoft 365."
+    },
+    {
+      "name": "Travel planning conversation",
+      "description": "Multi-turn thread testing context retention across turns",
+      "turns": [
+        {
+          "prompt": "I'm planning a trip to Seattle next week.",
+          "expected_response": "I can help you plan your Seattle trip."
+        },
+        {
+          "prompt": "What's the weather going to be like?",
+          "expected_response": "Seattle weather is typically mild with possible rain."
+        },
+        {
+          "prompt": "Should I bring a rain jacket?",
+          "expected_response": "Yes, it's always a good idea to bring rain gear to Seattle.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 }
+          },
+          "evaluators_mode": "extend"
+        }
+      ]
+    }
+  ]
+}

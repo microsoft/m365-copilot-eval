@@ -1,0 +1,377 @@
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "What health insurance plans does Contoso offer?",
+      "expected_response": "Contoso offers three health insurance plans: Contoso Basic (HMO), Contoso Plus (PPO), and Contoso Premium (PPO with HSA). All full-time employees are eligible for enrollment during open enrollment or within 30 days of their hire date.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "When is the open enrollment period at Contoso?",
+      "expected_response": "Contoso's open enrollment period runs from November 1 through November 30 each year. Changes made during open enrollment take effect on January 1 of the following year.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How many vacation days do new employees get at Contoso?",
+      "expected_response": "New full-time employees at Contoso receive 15 days of paid vacation per year. After 3 years of service, this increases to 20 days, and after 7 years it increases to 25 days.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer parental leave?",
+      "expected_response": "Yes. Contoso provides 16 weeks of fully paid parental leave for birth parents and 6 weeks of fully paid parental leave for non-birth parents. Parental leave must be taken within 12 months of the child's birth or adoption.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Can I carry over unused vacation days at Contoso?",
+      "expected_response": "Contoso allows employees to carry over up to 5 unused vacation days into the next calendar year. Any carryover days must be used by March 31 or they will be forfeited.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's sick leave policy?",
+      "expected_response": "Contoso provides 10 paid sick days per year for all full-time employees. Sick leave accrues at a rate of approximately 0.83 days per month. Unused sick days do not carry over to the next year.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Dental coverage inquiry",
+      "turns": [
+        {
+          "prompt": "Does Contoso provide dental insurance?",
+          "expected_response": "Yes, Contoso offers dental coverage through Delta Dental. All full-time employees and their dependents are eligible."
+        },
+        {
+          "prompt": "What does the dental plan cover?",
+          "expected_response": "The Contoso dental plan covers preventive care at 100%, basic procedures at 80%, and major procedures at 50%, up to an annual maximum of $2,000 per covered individual."
+        },
+        {
+          "prompt": "Is orthodontia covered?",
+          "expected_response": "Orthodontia is covered at 50% up to a lifetime maximum of $2,500 for dependents under age 19. Adult orthodontia is not covered under the standard Contoso dental plan.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Similarity": {}
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "Does Contoso offer a 401(k) plan?",
+      "expected_response": "Yes. Contoso offers a 401(k) retirement plan with a company match of 50% on the first 6% of employee contributions. Employees are eligible to enroll after 90 days of employment and are fully vested after 3 years.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's bereavement leave policy?",
+      "expected_response": "Contoso provides up to 5 paid bereavement days for the loss of an immediate family member (spouse, child, parent, sibling) and up to 3 days for extended family members (grandparent, in-law, aunt, uncle).",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.6 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I request time off at Contoso?",
+      "expected_response": "Time off requests at Contoso are submitted through the Contoso HR Portal under the 'Time & Attendance' section. Requests should be submitted at least two weeks in advance and require manager approval.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "FMLA eligibility flow",
+      "turns": [
+        {
+          "prompt": "Am I eligible for FMLA leave at Contoso?",
+          "expected_response": "You may be eligible for FMLA leave at Contoso if you have worked for the company for at least 12 months and have logged at least 1,250 hours in the past 12 months."
+        },
+        {
+          "prompt": "How much FMLA leave can I take?",
+          "expected_response": "Eligible Contoso employees can take up to 12 weeks of unpaid, job-protected FMLA leave within a 12-month period."
+        },
+        {
+          "prompt": "Can I use my vacation days during FMLA?",
+          "expected_response": "Yes, Contoso allows employees to substitute accrued paid vacation or sick leave for unpaid FMLA leave. Contact the Contoso HR team to coordinate this.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Citations": { "citation_format": "inline" }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "Does Contoso offer vision insurance?",
+      "expected_response": "Yes. Contoso provides vision coverage through VSP. The plan covers an annual eye exam, lenses, and frames or contact lenses up to a specified allowance. Full-time employees and their dependents are eligible.",
+      "evaluators": {
+        "Similarity": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's life insurance benefit?",
+      "expected_response": "Contoso provides basic life insurance equal to 1x annual salary at no cost to employees. Employees may purchase supplemental life insurance up to 5x annual salary through payroll deduction.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer an Employee Assistance Program?",
+      "expected_response": "Yes. Contoso's Employee Assistance Program (EAP) provides confidential counseling, legal consultation, financial planning, and work-life balance resources at no cost. Employees and their household members are eligible for up to 6 sessions per issue per year.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Can part-time employees at Contoso get benefits?",
+      "expected_response": "Part-time employees working 20 or more hours per week at Contoso are eligible for prorated benefits including health insurance, dental, and vision. Part-time employees working fewer than 20 hours per week are not eligible for benefits.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What holidays does Contoso observe?",
+      "expected_response": "Contoso observes 11 paid holidays per year: New Year's Day, Martin Luther King Jr. Day, Presidents' Day, Memorial Day, Juneteenth, Independence Day, Labor Day, Thanksgiving Day, the day after Thanksgiving, Christmas Eve, and Christmas Day.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "HSA eligibility flow",
+      "turns": [
+        {
+          "prompt": "Does Contoso offer a Health Savings Account?",
+          "expected_response": "Yes. Employees enrolled in the Contoso Premium (PPO with HSA) health plan are eligible for a Health Savings Account."
+        },
+        {
+          "prompt": "Does Contoso contribute to the HSA?",
+          "expected_response": "Yes, Contoso contributes $750 annually for individual coverage and $1,500 for family coverage to eligible employees' HSAs."
+        },
+        {
+          "prompt": "What is the maximum I can contribute to my HSA?",
+          "expected_response": "For 2026, the IRS limits are $4,300 for individual coverage and $8,550 for family coverage, including employer contributions. Employees aged 55 and older can contribute an additional $1,000 catch-up contribution.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "ExactMatch": { "case_sensitive": false }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "Does Contoso offer tuition reimbursement?",
+      "expected_response": "Yes. Contoso offers tuition reimbursement of up to $5,250 per calendar year for job-related undergraduate and graduate courses. Employees must have completed at least 6 months of service and receive manager approval before enrolling.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 },
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's short-term disability benefit?",
+      "expected_response": "Contoso provides short-term disability insurance that pays 60% of base salary for up to 26 weeks. There is a 7-day waiting period for illness and a 0-day waiting period for accidents. This benefit is fully company-paid.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer long-term disability insurance?",
+      "expected_response": "Yes. Contoso provides long-term disability insurance that pays 60% of base salary after the short-term disability period ends. Coverage continues until age 65 or return to work, whichever comes first.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I add a dependent to my Contoso benefits?",
+      "expected_response": "You can add a dependent to your Contoso benefits within 30 days of a qualifying life event (marriage, birth, adoption) by submitting a change request through the Contoso HR Portal. Otherwise, changes can be made during the annual open enrollment period.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer flexible spending accounts?",
+      "expected_response": "Yes. Contoso offers both a Healthcare FSA (up to $3,200 per year) and a Dependent Care FSA (up to $5,000 per year). FSA elections are made during open enrollment and are use-it-or-lose-it, with a $640 rollover allowed for the Healthcare FSA.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Leave of absence request",
+      "turns": [
+        {
+          "prompt": "I need to take a personal leave of absence from Contoso. Is that possible?",
+          "expected_response": "Yes, Contoso offers personal leaves of absence for up to 30 days for employees who have completed at least one year of service. Approval is at the discretion of your manager and HR."
+        },
+        {
+          "prompt": "Will my benefits continue during personal leave?",
+          "expected_response": "During an approved personal leave of absence at Contoso, your benefits will continue for up to 30 days, provided you continue to pay your portion of the premiums."
+        },
+        {
+          "prompt": "How do I apply for personal leave?",
+          "expected_response": "Submit a personal leave request through the Contoso HR Portal at least 30 days in advance. Include the reason for leave and expected return date. Your manager and HR will review and respond within 5 business days.",
+          "evaluators": {
+            "Similarity": {},
+            "Citations": { "citation_format": "inline" }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is Contoso's jury duty leave policy?",
+      "expected_response": "Contoso provides paid jury duty leave for the duration of required service. Employees must provide a copy of the jury summons to their manager and HR as soon as it is received.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer pet insurance?",
+      "expected_response": "Yes. Contoso partners with Nationwide Pet Insurance to offer discounted pet insurance plans. This is a voluntary benefit paid entirely by the employee through payroll deduction.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What wellness programs does Contoso offer?",
+      "expected_response": "Contoso offers a comprehensive wellness program that includes gym membership reimbursement up to $50/month, annual health screenings, mental health resources, smoking cessation programs, and a wellness rewards program where employees can earn up to $500 annually.",
+      "evaluators": {
+        "Similarity": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso's commuter benefits program work?",
+      "expected_response": "Contoso offers pre-tax commuter benefits that allow employees to set aside up to $325 per month for transit and up to $325 per month for qualified parking expenses. Enrollment can be changed monthly through the Contoso HR Portal.",
+      "evaluators": {
+        "Groundedness": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer adoption assistance?",
+      "expected_response": "Yes. Contoso provides adoption assistance of up to $10,000 per adoption for eligible expenses including agency fees, legal fees, and court costs. Employees must have completed at least one year of service to qualify.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's military leave policy?",
+      "expected_response": "Contoso complies with USERRA and provides military leave for employees who are members of the uniformed services. Contoso pays the difference between military pay and base salary for up to 12 months. Employees retain their benefits during military leave.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Can I donate my unused vacation days to a coworker at Contoso?",
+      "expected_response": "Yes. Contoso has a Vacation Donation Program that allows employees to donate unused vacation days to colleagues experiencing a medical emergency or other qualifying hardship. Donations are made through the Contoso HR Portal and require HR approval.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.6 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Sabbatical eligibility flow",
+      "turns": [
+        {
+          "prompt": "Does Contoso offer sabbatical leave?",
+          "expected_response": "Yes, Contoso offers a paid sabbatical program for long-tenured employees."
+        },
+        {
+          "prompt": "How long is the sabbatical and who is eligible?",
+          "expected_response": "Employees with 10 or more years of continuous service at Contoso are eligible for a 4-week paid sabbatical. The sabbatical must be taken in one continuous block."
+        },
+        {
+          "prompt": "Do my benefits continue during sabbatical?",
+          "expected_response": "Yes, all benefits continue during your Contoso sabbatical leave. The sabbatical is treated as paid leave, so there is no change to your benefits, 401(k) contributions, or accrual of vacation and sick time.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Similarity": {}
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "Does Contoso offer a student loan repayment benefit?",
+      "expected_response": "Yes. Contoso contributes up to $200 per month toward eligible employee student loan payments, up to a lifetime maximum of $10,000. This benefit is available to all full-time employees after 6 months of service.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's policy on voting leave?",
+      "expected_response": "Contoso provides up to 2 hours of paid time off on Election Day to vote. Employees should coordinate with their manager to minimize disruption to work schedules.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I file a benefits claim at Contoso?",
+      "expected_response": "Benefits claims at Contoso are filed through the respective insurance carrier's portal or app. For assistance, contact the Contoso Benefits Help Desk at benefits@contoso.com or call 1-800-555-0199 during business hours.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso have a work-from-home stipend?",
+      "expected_response": "Yes. Contoso provides a one-time $500 home office setup stipend for remote and hybrid employees, plus a monthly $75 internet and utilities reimbursement. Employees must submit receipts through the Contoso Expense Portal.",
+      "evaluators": {
+        "Similarity": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What mental health benefits does Contoso provide?",
+      "expected_response": "Contoso provides mental health support through the EAP (6 free sessions per issue per year), in-network therapy covered under all health plans, access to the Calm app at no cost, and quarterly mental health awareness workshops.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer fertility benefits?",
+      "expected_response": "Yes. Contoso's health plans include fertility benefits covering up to $25,000 in lifetime fertility treatment expenses, including IVF, IUI, and fertility preservation. Pre-authorization from the insurance carrier is required.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 },
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    }
+  ]
+}
