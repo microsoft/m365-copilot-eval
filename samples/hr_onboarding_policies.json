@@ -1,0 +1,364 @@
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "What documents do I need to bring on my first day at Contoso?",
+      "expected_response": "On your first day at Contoso, please bring a valid government-issued photo ID (such as a passport or driver's license), proof of work eligibility (such as a Social Security card or birth certificate), and your completed I-9 form. You will also need your direct deposit banking information for payroll setup.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What does the Contoso onboarding process look like?",
+      "expected_response": "Contoso's onboarding program spans your first 90 days. Week 1 includes orientation, IT setup, compliance training, and team introductions. Weeks 2-4 focus on role-specific training and a buddy program. Months 2-3 include check-ins with your manager and HR at the 30, 60, and 90-day marks.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's dress code policy?",
+      "expected_response": "Contoso follows a business casual dress code Monday through Thursday and allows casual attire on Fridays. Business casual includes collared shirts, blouses, slacks, skirts, and closed-toe shoes. Client-facing meetings may require business professional attire.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 },
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's remote work policy?",
+      "expected_response": "Contoso offers a hybrid work model. Most roles allow employees to work remotely up to 3 days per week. Fully remote arrangements require VP-level approval. All employees must be available during core hours of 10:00 AM to 3:00 PM in their local time zone.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "New hire equipment setup",
+      "turns": [
+        {
+          "prompt": "What equipment will I receive as a new hire at Contoso?",
+          "expected_response": "All new Contoso employees receive a company laptop, monitor, keyboard, mouse, and headset. Remote employees also receive a laptop stand and webcam."
+        },
+        {
+          "prompt": "How do I request additional equipment?",
+          "expected_response": "Additional equipment requests are submitted through the Contoso IT Service Portal under 'Hardware Requests.' Your manager must approve the request, and standard items are typically delivered within 5-7 business days."
+        },
+        {
+          "prompt": "What happens to the equipment when I leave Contoso?",
+          "expected_response": "All company equipment must be returned to Contoso IT within 5 business days of your last day. Remote employees will receive a prepaid shipping label. Failure to return equipment may result in deductions from your final paycheck as permitted by law.",
+          "evaluators": {
+            "ExactMatch": { "case_sensitive": false },
+            "Groundedness": { "threshold": 4 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is Contoso's anti-harassment policy?",
+      "expected_response": "Contoso maintains a zero-tolerance policy for harassment, discrimination, and retaliation. All forms of harassment based on race, gender, age, religion, sexual orientation, disability, or any other protected characteristic are prohibited. Employees should report incidents to HR, their manager, or the anonymous Contoso Ethics Hotline at 1-800-555-0188.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 },
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso handle workplace conflicts?",
+      "expected_response": "Contoso encourages employees to resolve conflicts informally first. If informal resolution fails, employees can request mediation through HR. Formal grievances can be filed through the Contoso HR Portal. HR aims to acknowledge complaints within 2 business days and complete investigations within 30 days.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's policy on outside employment?",
+      "expected_response": "Contoso employees may hold outside employment as long as it does not create a conflict of interest, interfere with job performance, or involve competitors. Employees must disclose outside employment to their manager and HR by submitting the Outside Employment Disclosure form on the Contoso HR Portal.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What mandatory training do Contoso employees need to complete?",
+      "expected_response": "All Contoso employees must complete the following annual training: Security Awareness, Anti-Harassment and Discrimination, Code of Conduct, Data Privacy and GDPR, and Emergency Preparedness. New hires must complete all modules within 30 days of their start date. Training is administered through the Contoso Learning Hub.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Workplace accommodation request",
+      "turns": [
+        {
+          "prompt": "How do I request a workplace accommodation at Contoso?",
+          "expected_response": "To request a workplace accommodation at Contoso, submit a Reasonable Accommodation Request through the Contoso HR Portal or contact the HR Accommodations team at accommodations@contoso.com."
+        },
+        {
+          "prompt": "What kind of accommodations does Contoso provide?",
+          "expected_response": "Contoso provides reasonable accommodations including ergonomic equipment, modified work schedules, assistive technology, accessible parking, remote work arrangements, and sign language interpreters. Each request is evaluated individually through an interactive process."
+        },
+        {
+          "prompt": "How long does it take to process an accommodation request?",
+          "expected_response": "Contoso aims to acknowledge accommodation requests within 3 business days and complete the interactive process within 30 days. Temporary accommodations may be provided while the formal review is underway.",
+          "evaluators": {
+            "PartialMatch": { "threshold": 0.6 },
+            "Groundedness": { "threshold": 4 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is Contoso's social media policy?",
+      "expected_response": "Contoso employees may use personal social media but must not disclose confidential information, speak on behalf of Contoso without authorization, or post content that could damage the company's reputation. Employees should include a disclaimer that views are their own when discussing work-related topics online.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 },
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is the probationary period at Contoso?",
+      "expected_response": "New employees at Contoso serve a 90-day probationary period. During this time, performance is closely monitored with formal check-ins at 30, 60, and 90 days. Benefits eligibility begins on the first day, but certain protections like severance do not apply during probation.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I update my personal information in Contoso's HR system?",
+      "expected_response": "You can update your personal information (address, phone number, emergency contacts, name change) through the Contoso HR Portal under 'My Profile.' Name and legal ID changes require supporting documentation and are processed within 5 business days.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's travel policy?",
+      "expected_response": "Contoso's travel policy requires pre-approval for all business travel through the Contoso Travel Portal. Economy class is standard for domestic flights; business class is allowed for international flights over 6 hours. Hotel rates should not exceed the GSA per diem rate. Expenses must be submitted within 14 days of return.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Internal transfer process",
+      "turns": [
+        {
+          "prompt": "Can I transfer to another department at Contoso?",
+          "expected_response": "Yes. Contoso encourages internal mobility. Employees who have been in their current role for at least 12 months are eligible to apply for internal transfers."
+        },
+        {
+          "prompt": "How do I apply for an internal transfer?",
+          "expected_response": "Internal positions are posted on the Contoso Careers Portal. Apply through the portal and notify your current manager. Internal candidates are given priority consideration and typically hear back within 2 weeks."
+        },
+        {
+          "prompt": "Will my benefits change if I transfer?",
+          "expected_response": "Your benefits, seniority, and accrued vacation carry over when you transfer internally at Contoso. If the new role has a different compensation structure, your salary will be adjusted according to the new role's pay band effective on your transfer date.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Similarity": { "threshold": 4 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is Contoso's substance abuse policy?",
+      "expected_response": "Contoso maintains a drug-free workplace. The use, possession, or distribution of illegal substances on company premises is prohibited. Contoso reserves the right to conduct drug testing for safety-sensitive positions. Employees struggling with substance abuse are encouraged to seek help through the EAP.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso handle data privacy?",
+      "expected_response": "Contoso complies with all applicable data privacy regulations including GDPR and CCPA. Employee personal data is stored securely and accessed only on a need-to-know basis. Employees can request a copy of their personal data or request deletion by contacting privacy@contoso.com.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's workplace safety policy?",
+      "expected_response": "Contoso is committed to providing a safe work environment in compliance with OSHA standards. All employees must report workplace injuries or unsafe conditions to their manager or the Facilities team immediately. Safety training is provided during onboarding and annually thereafter.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's policy on intellectual property?",
+      "expected_response": "All intellectual property created by Contoso employees during the course of employment or using company resources belongs to Contoso. Employees sign an Invention Assignment Agreement as part of the onboarding process. Questions about IP ownership should be directed to the Contoso Legal team.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Resignation process",
+      "turns": [
+        {
+          "prompt": "How do I resign from Contoso?",
+          "expected_response": "To resign from Contoso, submit a written resignation letter to your manager and HR at least 2 weeks before your intended last day. You can also submit your resignation through the Contoso HR Portal."
+        },
+        {
+          "prompt": "What happens during my notice period?",
+          "expected_response": "During your notice period at Contoso, you will work with your manager to transition your responsibilities. You may be asked to document processes and train your replacement. You will retain full access to benefits through your last day."
+        },
+        {
+          "prompt": "Will I receive my unused vacation payout?",
+          "expected_response": "Yes, Contoso pays out all accrued and unused vacation days in your final paycheck. The payout is calculated at your current daily rate and is subject to applicable taxes.",
+          "evaluators": {
+            "ExactMatch": { "case_sensitive": false },
+            "Groundedness": { "threshold": 4 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is Contoso's policy on gifts and entertainment?",
+      "expected_response": "Contoso employees may not accept gifts valued over $100 from vendors, clients, or business partners. Meals and entertainment are acceptable if they serve a legitimate business purpose and are under $250 per event. All gifts and entertainment must be reported on the Contoso Ethics Portal.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso have a whistleblower policy?",
+      "expected_response": "Yes. Contoso protects employees who report suspected fraud, violations of law, or unethical behavior in good faith. Reports can be made through the Contoso Ethics Hotline at 1-800-555-0188 or via the anonymous online portal at ethics.contoso.com. Retaliation against whistleblowers is strictly prohibited.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's inclement weather policy?",
+      "expected_response": "When severe weather impacts Contoso office locations, the Facilities team will notify employees via email and the Contoso Alerts app. Employees may work remotely during inclement weather without manager approval. If the office is officially closed, it is treated as a paid day off.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 },
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I report an ethics concern at Contoso?",
+      "expected_response": "Ethics concerns can be reported to your manager, HR, the Contoso Legal team, or anonymously through the Contoso Ethics Hotline at 1-800-555-0188 or online at ethics.contoso.com. All reports are investigated confidentially and in accordance with Contoso's Code of Conduct.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's non-compete policy?",
+      "expected_response": "Certain Contoso employees in leadership or specialized roles may be subject to a non-compete agreement lasting 12 months post-employment within the same geographic market. The specific terms are outlined in your employment agreement. Contact Contoso Legal for questions about your obligations.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's policy on workplace visitors?",
+      "expected_response": "All visitors to Contoso offices must check in at reception, present a valid photo ID, and receive a visitor badge. Visitors must be accompanied by a Contoso employee at all times. Visitor access is limited to common areas unless pre-approved by Facilities.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Background check process",
+      "turns": [
+        {
+          "prompt": "Does Contoso conduct background checks?",
+          "expected_response": "Yes. Contoso conducts background checks on all final-stage candidates. Checks include criminal history, employment verification, education verification, and professional reference checks."
+        },
+        {
+          "prompt": "When does the background check happen in the hiring process?",
+          "expected_response": "Background checks are initiated after a conditional offer of employment is extended. Results are typically available within 5-7 business days. Start dates are confirmed only after successful completion of the background check."
+        },
+        {
+          "prompt": "What happens if something comes up on my background check?",
+          "expected_response": "Contoso reviews background check findings on a case-by-case basis considering the nature and relevance of the finding, how long ago it occurred, and the requirements of the role. Candidates are given an opportunity to explain any findings before a final hiring decision is made.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Similarity": { "threshold": 4 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is Contoso's expense reimbursement policy?",
+      "expected_response": "Business expenses at Contoso must be pre-approved by your manager and submitted through the Contoso Expense Portal within 14 days of being incurred. Receipts are required for all expenses over $25. Reimbursement is typically processed within 10 business days.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso have an employee referral program?",
+      "expected_response": "Yes. Contoso offers a $2,500 referral bonus for successful hires and $5,000 for hard-to-fill positions. The bonus is paid in two installments: 50% after the new hire completes 30 days and 50% after 6 months. All full-time employees are eligible to participate.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What are Contoso's core working hours?",
+      "expected_response": "Contoso's core working hours are 10:00 AM to 3:00 PM local time, Monday through Friday. Outside of core hours, employees have flexibility to set their own schedules in coordination with their manager. Total expected hours are 40 per week for full-time employees.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's employee code of conduct?",
+      "expected_response": "Contoso's Code of Conduct requires employees to act with integrity, respect others, protect company assets, avoid conflicts of interest, and comply with all applicable laws and regulations. The full Code of Conduct is available on the Contoso Intranet and is reviewed annually during mandatory training.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I access the Contoso employee handbook?",
+      "expected_response": "The Contoso Employee Handbook is available on the Contoso Intranet under HR Resources > Policies & Handbooks. A digital copy is also provided during onboarding. For the most current version, always refer to the Intranet. Contact HR at hr@contoso.com if you need assistance.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso allow pets in the office?",
+      "expected_response": "Contoso allows well-behaved dogs in designated pet-friendly office areas on Wednesdays ('Woof Wednesdays'). Dogs must be registered with Facilities, current on vaccinations, and under the owner's control at all times. Service animals are welcome any day without prior registration.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's stance on diversity and inclusion?",
+      "expected_response": "Contoso is committed to fostering a diverse and inclusive workplace. Contoso supports Employee Resource Groups (ERGs), unconscious bias training, diverse hiring practices, and pay equity audits. The Chief Diversity Officer reports directly to the CEO and publishes an annual diversity and inclusion report.",
+      "evaluators": {
+        "Groundedness": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso protect confidential information?",
+      "expected_response": "All Contoso employees sign a Confidentiality and Non-Disclosure Agreement during onboarding. Confidential information must not be shared outside the company without authorization. Documents should be classified according to Contoso's data classification policy (Public, Internal, Confidential, Restricted). Violations may result in disciplinary action up to termination.",
+      "evaluators": {
+        "Groundedness": {},
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    }
+  ]
+}

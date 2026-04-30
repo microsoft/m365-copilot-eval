@@ -1,0 +1,384 @@
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "When does Contoso process payroll?",
+      "expected_response": "Contoso processes payroll on a bi-weekly basis, with pay dates falling on every other Friday. The payroll cutoff for time entries is the Monday before the pay date at 5:00 PM. Direct deposits are available by 8:00 AM on pay day.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I view my pay stub at Contoso?",
+      "expected_response": "Pay stubs are available through the Contoso HR Portal under 'Payroll & Compensation.' You can view, download, and print current and historical pay stubs going back up to 3 years. New pay stubs are posted the Wednesday before each pay date.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso's performance review process work?",
+      "expected_response": "Contoso conducts annual performance reviews in January for the prior calendar year. The process includes a self-assessment, peer feedback (360-degree review), a manager evaluation, and a one-on-one calibration meeting. Final ratings are shared by mid-February.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 },
+        "Similarity": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's performance rating scale?",
+      "expected_response": "Contoso uses a 5-point performance rating scale: 1 - Does Not Meet Expectations, 2 - Partially Meets Expectations, 3 - Meets Expectations, 4 - Exceeds Expectations, 5 - Exceptional. Ratings of 1 or 2 trigger a performance improvement plan.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Salary adjustment inquiry",
+      "turns": [
+        {
+          "prompt": "When do salary adjustments happen at Contoso?",
+          "expected_response": "Salary adjustments at Contoso are effective April 1 each year, following the annual performance review cycle. Adjustments are based on performance ratings, market benchmarking, and budget availability."
+        },
+        {
+          "prompt": "How are raise percentages determined?",
+          "expected_response": "Raise percentages at Contoso are tied to performance ratings. Typical ranges are: Meets Expectations 2-3%, Exceeds Expectations 4-6%, and Exceptional 7-10%. Employees rated below Meets Expectations are not eligible for merit increases."
+        },
+        {
+          "prompt": "Can I negotiate my raise?",
+          "expected_response": "Contoso's merit increase process is standardized, but employees may discuss their compensation with their manager during the review meeting. If you believe your compensation is below market, you can request a market adjustment review through HR, which is evaluated separately from the annual merit cycle.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Similarity": {}
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "How do I update my tax withholdings at Contoso?",
+      "expected_response": "You can update your federal and state tax withholdings (W-4) through the Contoso HR Portal under 'Payroll & Compensation > Tax Withholdings.' Changes submitted before the payroll cutoff will take effect on the next pay cycle. For tax-related questions, contact payroll@contoso.com.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer bonuses?",
+      "expected_response": "Yes. Contoso offers an annual performance bonus for eligible employees. The target bonus is a percentage of base salary that varies by level: Individual Contributors 5-10%, Managers 10-15%, Directors 15-20%, and VPs 20-30%. Actual bonus payouts depend on individual performance and company financial results.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "When are bonuses paid at Contoso?",
+      "expected_response": "Annual performance bonuses at Contoso are typically paid in March, following the completion of the performance review cycle and finance approval. Employees must be active on the payout date to receive their bonus. Pro-rated bonuses are provided for employees who joined mid-year.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Performance improvement plan",
+      "turns": [
+        {
+          "prompt": "What is a performance improvement plan at Contoso?",
+          "expected_response": "A Performance Improvement Plan (PIP) at Contoso is a formal, documented process to help employees who are not meeting performance expectations. It outlines specific areas for improvement, measurable goals, resources provided, and a timeline for achieving those goals."
+        },
+        {
+          "prompt": "How long does a PIP last?",
+          "expected_response": "A standard PIP at Contoso lasts 60 days, with a formal check-in at the 30-day midpoint. In some cases, the PIP may be extended to 90 days at the manager's discretion with HR approval."
+        },
+        {
+          "prompt": "What happens if I don't meet the PIP goals?",
+          "expected_response": "If PIP goals are not met within the designated timeframe, Contoso may take further action including reassignment to a different role, demotion, or termination of employment. The specific outcome depends on the circumstances and is determined by the manager and HR in consultation.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Citations": { "citation_format": "inline" }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "How does Contoso handle overtime pay?",
+      "expected_response": "Non-exempt Contoso employees are eligible for overtime pay at 1.5x their regular hourly rate for hours worked beyond 40 in a workweek. Overtime must be pre-approved by the employee's manager. Exempt employees are not eligible for overtime pay.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's pay equity policy?",
+      "expected_response": "Contoso conducts annual pay equity audits to ensure fair compensation regardless of gender, race, ethnicity, or other protected characteristics. Adjustments are made where statistically significant disparities are identified. The results are summarized in the annual Diversity & Inclusion report.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I set goals at Contoso?",
+      "expected_response": "Goals at Contoso are set at the beginning of each calendar year using the OKR (Objectives and Key Results) framework in the Contoso Performance Hub. Employees typically set 3-5 objectives aligned with team and company priorities. Goals are reviewed quarterly and updated as needed.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer stock options or equity?",
+      "expected_response": "Yes. Contoso offers Restricted Stock Units (RSUs) to employees at the Senior level and above. RSU grants are made annually based on performance and level, with a 4-year vesting schedule (25% per year). New hire grants are also provided for eligible positions.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Promotion process",
+      "turns": [
+        {
+          "prompt": "How does the promotion process work at Contoso?",
+          "expected_response": "Promotions at Contoso are reviewed during the annual performance cycle. Managers nominate candidates who are consistently performing at the next level. Nominations go through a calibration process with leadership and HR."
+        },
+        {
+          "prompt": "What criteria does Contoso use for promotions?",
+          "expected_response": "Contoso evaluates promotion candidates on sustained high performance (typically 2+ consecutive review cycles), demonstration of next-level competencies, scope and impact of contributions, and alignment with team needs and organizational headcount."
+        },
+        {
+          "prompt": "When do promotions take effect?",
+          "expected_response": "Promotions at Contoso are announced in March and take effect on April 1, coinciding with the annual compensation adjustment cycle. Promoted employees receive a title change, salary adjustment to the new level's pay band, and an updated RSU grant if applicable.",
+          "evaluators": {
+            "ExactMatch": { "case_sensitive": false },
+            "Groundedness": { "threshold": 4 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "How does Contoso's 360-degree feedback work?",
+      "expected_response": "As part of the annual review, Contoso employees select 3-5 peers to provide feedback. Peer reviewers complete a structured questionnaire rating collaboration, communication, and technical skills. Feedback is anonymized and shared with the employee and their manager as part of the performance review.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's policy on pay transparency?",
+      "expected_response": "Contoso publishes salary ranges for all job levels internally on the Contoso Careers Portal. External job postings include pay ranges in compliance with applicable state and local laws. Employees may discuss their compensation with coworkers without restriction.",
+      "evaluators": {
+        "Groundedness": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I submit my timesheet at Contoso?",
+      "expected_response": "Timesheets at Contoso are submitted through the Contoso HR Portal under 'Time & Attendance.' Non-exempt employees must submit weekly timesheets by Monday at 10:00 AM for the prior week. Exempt employees log their time monthly for project allocation purposes.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer professional development budgets?",
+      "expected_response": "Yes. Each Contoso employee receives a $2,000 annual professional development budget for conferences, certifications, online courses, books, and professional memberships. Expenses are submitted through the Contoso Expense Portal with manager approval.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Job leveling inquiry",
+      "turns": [
+        {
+          "prompt": "What is Contoso's job leveling framework?",
+          "expected_response": "Contoso uses a standardized job leveling framework with levels ranging from L1 (Entry) through L10 (C-Suite). Individual Contributor and Management tracks diverge at L5, allowing employees to advance without moving into management."
+        },
+        {
+          "prompt": "How do I know what level I am?",
+          "expected_response": "Your current job level is listed on your profile in the Contoso HR Portal under 'My Compensation.' You can also view level definitions and competency expectations for your role in the Contoso Career Framework, available on the Intranet."
+        },
+        {
+          "prompt": "Can I switch between the IC and management tracks?",
+          "expected_response": "Yes, Contoso supports lateral moves between the Individual Contributor and Management tracks at equivalent levels. Discuss your interest with your manager and HR. A transition plan is typically created to support skill development for the new track.",
+          "evaluators": {
+            "Similarity": {},
+            "PartialMatch": { "threshold": 0.6 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "How does Contoso handle payroll errors?",
+      "expected_response": "If you notice a payroll error, contact payroll@contoso.com or submit a ticket through the Contoso HR Portal under 'Payroll & Compensation > Report an Issue.' Overpayments are corrected in the next pay cycle. Underpayments are corrected via an off-cycle payment within 3 business days.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's approach to continuous feedback?",
+      "expected_response": "In addition to annual reviews, Contoso encourages continuous feedback through quarterly check-ins, monthly 1:1 meetings, and the 'Kudos' recognition feature in the Contoso Performance Hub. Managers are expected to provide ongoing coaching and feedback throughout the year.",
+      "evaluators": {
+        "Similarity": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer spot bonuses?",
+      "expected_response": "Yes. Contoso managers can award spot bonuses of $250 to $2,500 to recognize exceptional contributions outside the normal bonus cycle. Spot bonuses require director-level approval and are processed through the Contoso Rewards Portal.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso determine salary bands?",
+      "expected_response": "Contoso's salary bands are determined through annual market benchmarking using data from Radford, Mercer, and other compensation surveys. Each job level has a minimum, midpoint, and maximum salary. Bands are adjusted annually to remain competitive with the 50th-75th percentile of the market.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Manager performance support",
+      "turns": [
+        {
+          "prompt": "What tools does Contoso provide managers for performance management?",
+          "expected_response": "Contoso managers have access to the Contoso Performance Hub for goal tracking, review management, and feedback. Additional resources include the Manager Toolkit on the Intranet, manager coaching sessions with HR Business Partners, and the quarterly Manager Excellence webinar series."
+        },
+        {
+          "prompt": "How do I give effective performance feedback at Contoso?",
+          "expected_response": "Contoso recommends using the SBI (Situation-Behavior-Impact) framework for feedback. Be specific about the situation, describe the observable behavior, and explain the impact. The Contoso Manager Toolkit includes templates and examples for giving both positive and constructive feedback."
+        },
+        {
+          "prompt": "How do I handle an underperforming team member?",
+          "expected_response": "Start with a direct, private conversation documenting specific performance gaps. If improvement is not seen within 30 days of informal coaching, work with your HR Business Partner to initiate a formal Performance Improvement Plan (PIP). All documentation should be submitted through the Contoso Performance Hub.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 },
+            "Citations": { "citation_format": "inline" }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "What is Contoso's Employee Recognition Program?",
+      "expected_response": "Contoso's Employee Recognition Program includes peer-to-peer Kudos (redeemable for gift cards), quarterly Star Performer awards ($500 bonus), and the annual Contoso Excellence Award (trip + $5,000). Nominations are submitted through the Contoso Rewards Portal and reviewed by a cross-functional committee.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso handle compensation during a role change?",
+      "expected_response": "When an employee changes roles at Contoso, compensation is adjusted to fall within the new role's salary band. Lateral moves typically maintain current salary. Promotions include a salary increase of 8-15% depending on the new level. Demotions result in salary adjustment to the appropriate band.",
+      "evaluators": {
+        "Similarity": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "Does Contoso offer retention bonuses?",
+      "expected_response": "In certain cases, Contoso may offer retention bonuses to key employees during critical business periods such as mergers, acquisitions, or major product launches. Retention bonuses are determined by leadership and HR on a case-by-case basis and typically require the employee to remain for a specified period (usually 12-18 months).",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How do I get a copy of my W-2 from Contoso?",
+      "expected_response": "W-2 forms are available in the Contoso HR Portal under 'Payroll & Compensation > Tax Documents' by January 31 each year. You can view, download, and print current and prior-year W-2 forms. Paper copies are mailed to your address on file if you have not opted out.",
+      "evaluators": {
+        "Citations": { "citation_format": "inline" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What mentorship programs does Contoso offer?",
+      "expected_response": "Contoso offers a formal mentorship program that pairs employees with senior leaders for a 6-month engagement. Applications open in January and July. Additionally, Contoso supports informal mentoring through the Contoso Connect platform, where employees can find mentors by skill, department, or interest.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.6 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso's skip-level meeting process work?",
+      "expected_response": "Contoso encourages skip-level meetings where employees meet directly with their manager's manager at least once per quarter. These meetings are an opportunity to share feedback, discuss career aspirations, and raise concerns. Skip-level meetings are confidential and should not be used to circumvent the direct manager relationship.",
+      "evaluators": {
+        "Similarity": {}
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What happens to my unvested RSUs if I leave Contoso?",
+      "expected_response": "If you leave Contoso voluntarily, all unvested RSUs are forfeited as of your termination date. Vested RSUs remain yours. In the case of involuntary termination without cause, Contoso may provide accelerated vesting for a portion of unvested RSUs at the company's discretion, as outlined in the equity agreement.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 },
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "name": "Payroll deduction inquiry",
+      "turns": [
+        {
+          "prompt": "What are the standard payroll deductions at Contoso?",
+          "expected_response": "Standard payroll deductions at Contoso include federal and state income tax, Social Security (FICA), Medicare, health/dental/vision insurance premiums, 401(k) contributions, and any voluntary benefits such as FSA, HSA, life insurance, or commuter benefits."
+        },
+        {
+          "prompt": "Can I change my 401(k) contribution mid-year?",
+          "expected_response": "Yes. Contoso employees can change their 401(k) contribution percentage at any time through the Contoso HR Portal under 'Payroll & Compensation > Retirement.' Changes take effect on the next pay cycle after submission."
+        },
+        {
+          "prompt": "How do I stop a voluntary deduction?",
+          "expected_response": "To stop a voluntary deduction (such as supplemental life insurance or pet insurance), update your elections in the Contoso HR Portal under 'Benefits > My Elections.' Some changes may only be made during open enrollment or after a qualifying life event. Contact benefits@contoso.com for specific questions.",
+          "evaluators": {
+            "Citations": { "citation_format": "mixed" },
+            "Groundedness": { "threshold": 4 }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    },
+    {
+      "prompt": "Does Contoso have a career development framework?",
+      "expected_response": "Yes. Contoso's Career Development Framework is available on the Intranet and outlines competencies, skills, and expectations for each job level across all functions. Employees use it to identify growth areas, create individual development plans, and have career conversations with their managers.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How does Contoso handle mid-year performance check-ins?",
+      "expected_response": "Contoso requires a formal mid-year check-in in July where managers and employees review progress against goals, discuss any obstacles, and adjust OKRs as needed. Mid-year ratings are not issued, but the check-in is documented in the Contoso Performance Hub for reference during the annual review.",
+      "evaluators": {
+        "Similarity": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Contoso's policy on salary advances?",
+      "expected_response": "Contoso does not offer salary advances as a standard practice. In cases of financial hardship, employees may contact HR to discuss options including early access to earned wages through Contoso's partnership with DailyPay, EAP financial counseling, or emergency assistance through the Contoso Employee Relief Fund.",
+      "evaluators": {
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "How are Contoso managers evaluated?",
+      "expected_response": "Contoso managers are evaluated on both business results and people leadership. In addition to standard OKR achievement, managers receive a Manager Effectiveness Score based on anonymous team surveys covering communication, support, development, and inclusivity. This score is factored into their overall performance rating.",
+      "evaluators": {
+        "PartialMatch": { "threshold": 0.5 },
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend"
+    }
+  ]
+}

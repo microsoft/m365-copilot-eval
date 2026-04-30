@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "What is Microsoft Graph?",
+      "expected_response": "A unified API endpoint for Microsoft services.",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "What is Microsoft 365?",
+      "expected_response": "Microsoft 365 is a cloud-based productivity suite...",
+      "evaluators": {
+        "Citations": { "citation_format": "mixed" },
+        "ExactMatch": { "case_sensitive": false }
+      },
+      "evaluators_mode": "replace"
+    }
+  ]
+}
