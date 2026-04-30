@@ -1,1 +1,0 @@
-Localized EULAs will be added to this folder as they become available
