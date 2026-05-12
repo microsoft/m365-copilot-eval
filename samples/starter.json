@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0.0",
+  "items": [
+    {
+      "prompt": "What is Microsoft 365?",
+      "expected_response": "Microsoft 365 is a cloud-based productivity suite that includes applications like Word, Excel, PowerPoint, Teams, and other collaboration tools."
+    },
+    {
+      "prompt": "How can I share a file in Teams?",
+      "expected_response": "You can share a file in Teams by uploading it to a channel or chat, or by sharing a link from OneDrive or SharePoint."
+    }
+  ]
+}

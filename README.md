@@ -192,8 +192,8 @@ runevals --env dev
 
 The eval document schema is versioned independently from the CLI, following [Semantic Versioning](https://semver.org/).
 
-- **Schema location**: [`schema/v1/eval-document.schema.json`](schema/v1/eval-document.schema.json)
-- **Schema changelog**: [`schema/CHANGELOG.md`](schema/CHANGELOG.md)
+- **Schema location**: [`schema/v1/eval-document.schema.json`](./schema/v1/eval-document.schema.json)
+- **Schema changelog**: [`schema/CHANGELOG.md`](./schema/CHANGELOG.md)
 
 > **New in Schema v1.2.0**: Multi-turn conversation threads — test context persistence across multiple turns within a shared conversation session. Each thread supports 1-20 turns.
 
