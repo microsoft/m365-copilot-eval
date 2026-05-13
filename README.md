@@ -24,12 +24,13 @@ A CLI for evaluating M365 Copilot agents. Send prompts to your agent, get respon
 - **M365 Copilot License** for your tenant
 - **M365 Copilot Agent** deployed to your tenant (can be created with [M365 Agents Toolkit](https://learn.microsoft.com/en-us/microsoft-365/developer/overview-m365-agents-toolkit) or any other method)
 - **Node.js 24.12.0+** (check: `node --version`)
+- **Python 3.13.x** is downloaded automatically. If the download fails (e.g., network restrictions), set `PYTHON_PATH` to a local Python 3.13.x installation (see [Troubleshooting](#-troubleshooting))
 - **Environment file** with your credentials and agent ID (see [Environment Setup](#-environment-setup) below)
 - **Your Tenant ID** - get your tenant id using the instructions [here](https://learn.microsoft.com/en-us/azure/azure-portal/get-subscription-tenant-id) 
 - Admin approval to run WORKIQ Client App for your tenant [here](https://github.com/microsoft/work-iq/blob/main/ADMIN-INSTRUCTIONS.md)
 - **Azure OpenAI endpoint, and API key** (see [Getting Variables](#-getting-variables) below)
 
-> Note: Tool is currently supported on Windows only. Support for other operating systems is coming soon.
+> Note: Authentication is currently supported on Windows only. Support for other operating systems is coming soon.
 
 ## 🔧 Environment Setup
 
@@ -459,6 +460,20 @@ runevals cache-dir
 # Fix permissions (Unix/macOS)
 chmod -R u+w $(runevals cache-dir)
 ```
+
+### Custom Python Runtime (PYTHON_PATH)
+
+If the automatic Python download fails (e.g., network restrictions, unsupported platform), provide your own Python installation:
+
+```bash
+# Windows
+set PYTHON_PATH=C:\Python313\python.exe
+
+# macOS/Linux
+export PYTHON_PATH=/usr/local/bin/python3.13
+```
+
+Python 3.13.x is the tested version. If a different version is found, you'll be prompted to confirm before proceeding. In CI/CD, a version mismatch fails automatically.
 
 ## 📚 Advanced Documentation
 

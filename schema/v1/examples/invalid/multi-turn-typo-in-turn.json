@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.2.0",
+  "items": [
+    {
+      "turns": [
+        {
+          "prompt": "Hello",
+          "expeceted_response": "Typo in field name"
+        }
+      ]
+    }
+  ]
+}

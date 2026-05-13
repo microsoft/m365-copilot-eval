@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.2.0",
+  "items": [
+    {
+      "prompt": "This item has both prompt and turns",
+      "turns": [
+        {
+          "prompt": "Turn 1"
+        }
+      ]
+    }
+  ]
+}
