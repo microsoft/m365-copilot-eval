@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.2.0",
+  "items": [
+    {
+      "turns": [
+        {
+          "prompt": "Hello",
+          "evaluators": {
+            "TaskCompletionEvaluator": {}
+          }
+        }
+      ]
+    }
+  ]
+}

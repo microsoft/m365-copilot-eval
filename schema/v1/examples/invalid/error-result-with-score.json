@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.4.0",
+  "items": [
+    {
+      "prompt": "What is Microsoft Graph?",
+      "scores": {
+        "relevance": {
+          "result": "error",
+          "error": "Evaluator failed: Connection timeout to Azure OpenAI endpoint",
+          "score": 0,
+          "threshold": 3
+        }
+      }
+    }
+  ]
+}
