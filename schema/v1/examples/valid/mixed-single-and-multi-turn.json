@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "What is Microsoft Graph API?",
+      "expected_response": "Microsoft Graph API is a unified endpoint for accessing Microsoft services."
+    },
+    {
+      "name": "Canadian Employee HR Inquiry",
+      "turns": [
+        {
+          "prompt": "I'm a Canadian employee based in Toronto.",
+          "expected_response": "Got it! I can help with Canada-specific HR questions."
+        },
+        {
+          "prompt": "Is July 4th a holiday for me?",
+          "expected_response": "July 4th is not a statutory holiday in Canada. However, July 1st (Canada Day) is."
+        }
+      ]
+    },
+    {
+      "prompt": "How do I authenticate with Microsoft Graph?",
+      "expected_response": "You can authenticate using OAuth 2.0 or client credentials flow."
+    }
+  ]
+}
