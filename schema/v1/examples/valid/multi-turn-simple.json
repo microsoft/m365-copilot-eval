@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.2.0",
+  "items": [
+    {
+      "turns": [
+        {
+          "prompt": "I'm traveling to Seattle next week for a conference.",
+          "expected_response": "I can help with travel-related questions."
+        },
+        {
+          "prompt": "What's the weather usually like?",
+          "expected_response": "Seattle weather is typically mild with some rain."
+        },
+        {
+          "prompt": "Should I bring a rain jacket?",
+          "expected_response": "Yes, Seattle is known for rain. A rain jacket is recommended."
+        }
+      ]
+    }
+  ]
+}

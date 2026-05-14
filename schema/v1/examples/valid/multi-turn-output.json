@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.2.0",
+  "metadata": {
+    "evaluatedAt": "2026-03-30T10:00:00Z",
+    "agentName": "Travel Assistant",
+    "cliVersion": "1.3.0"
+  },
+  "items": [
+    {
+      "name": "Context Persistence Test",
+      "turns": [
+        {
+          "prompt": "I'm based in Seattle.",
+          "expected_response": "Got it! I can help with Seattle-specific questions.",
+          "response": "Understood! I can assist with Seattle-related queries.",
+          "scores": {
+            "relevance": {
+              "score": 4.0,
+              "result": "pass",
+              "threshold": 3,
+              "reason": "Response acknowledges Seattle context."
+            },
+            "coherence": {
+              "score": 5.0,
+              "result": "pass",
+              "threshold": 3
+            }
+          },
+          "status": "pass"
+        },
+        {
+          "prompt": "What's the weather like here?",
+          "expected_response": "Seattle weather is typically mild with rain.",
+          "response": "Seattle generally has mild temperatures with frequent rain, especially in fall and winter.",
+          "scores": {
+            "relevance": {
+              "score": 5.0,
+              "result": "pass",
+              "threshold": 3
+            },
+            "coherence": {
+              "score": 4.0,
+              "result": "pass",
+              "threshold": 3
+            }
+          },
+          "status": "pass"
+        }
+      ],
+      "conversation_id": "conv-abc-123",
+      "summary": {
+        "turns_total": 2,
+        "turns_passed": 2,
+        "turns_failed": 0,
+        "turns_partial": 0,
+        "turns_errored": 0,
+        "overall_status": "pass"
+      }
+    }
+  ]
+}
