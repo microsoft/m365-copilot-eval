@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.4.0",
+  "items": [
+    {
+      "prompt": "What is Microsoft Graph?",
+      "scores": {
+        "relevance": {
+          "result": "error"
+        }
+      }
+    }
+  ]
+}

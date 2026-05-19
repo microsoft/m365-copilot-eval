@@ -1,0 +1,239 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/M365-Copilot-Agent-Evals/refs/heads/main/schema/v1/eval-document.schema.json",
+  "schemaVersion": "1.4.0",
+  "metadata": {
+    "name": "All scenarios — comprehensive comparison fixture",
+    "description": "Single fixture exercising every output shape under v1.4.0. Items are structured to isolate one variable at a time so a reader can see exactly which combination drives which top-level `status` and whether the top-level `error` field is populated. Each item carries an `extensions.scenario` label for jq/grep.",
+    "evaluatedAt": "2026-05-01T11:00:00Z",
+    "agentName": "Test Agent",
+    "cliVersion": "1.4.0"
+  },
+  "items": [
+
+    {
+      "extensions": {
+        "scenario": "1-single-turn-uniform-pass",
+        "notes": "Baseline. All evaluators uniformly pass. status=pass. No top-level error field.",
+        "evaluators_in_scores": ["pass", "pass"],
+        "expected_status": "pass",
+        "expected_error_field_populated": false
+      },
+      "prompt": "What is Microsoft Graph API?",
+      "expected_response": "Microsoft Graph is a unified endpoint for M365 data.",
+      "response": "Microsoft Graph API is a gateway to data and intelligence in Microsoft 365.",
+      "scores": {
+        "relevance": { "score": 5.0, "result": "pass", "threshold": 3 },
+        "coherence": { "score": 5.0, "result": "pass", "threshold": 3 }
+      },
+      "status": "pass"
+    },
+
+    {
+      "extensions": {
+        "scenario": "2-single-turn-uniform-fail",
+        "notes": "All evaluators uniformly fail. status=fail. No top-level error field. Under v1.4.0 this is the ONLY shape producing status=fail — uniform-fail is strict.",
+        "evaluators_in_scores": ["fail", "fail"],
+        "expected_status": "fail",
+        "expected_error_field_populated": false
+      },
+      "prompt": "What is the boiling point of water in Fahrenheit at sea level?",
+      "expected_response": "212°F.",
+      "response": "Water boils at 150°F at sea level.",
+      "scores": {
+        "relevance": { "score": 2.0, "result": "fail", "threshold": 3, "reason": "Response is factually incorrect." },
+        "coherence": { "score": 2.0, "result": "fail", "threshold": 3, "reason": "Response contains an internal contradiction." }
+      },
+      "status": "fail"
+    },
+
+    {
+      "extensions": {
+        "scenario": "3-single-turn-fail-pass-fail-mix",
+        "notes": "All evaluators ran successfully; one passed, one returned a fail verdict. status=fail (covers uniform-fail and pass+fail mixes). Top-level error field is ABSENT — no errored evaluator to summarize.",
+        "evaluators_in_scores": ["pass", "fail"],
+        "expected_status": "fail",
+        "expected_error_field_populated": false
+      },
+      "prompt": "Explain the difference between SharePoint and OneDrive.",
+      "expected_response": "Covers shared vs personal storage, permissions model.",
+      "response": "SharePoint is for team collaboration; OneDrive is for personal files. Both use the same permissions engine.",
+      "scores": {
+        "relevance": { "score": 4.0, "result": "pass", "threshold": 3, "reason": "Response addresses the key distinction." },
+        "coherence": { "score": 2.0, "result": "fail", "threshold": 3, "reason": "The claim about a 'same permissions engine' is inaccurate; the response is internally inconsistent with product reality." }
+      },
+      "status": "fail"
+    },
+
+    {
+      "extensions": {
+        "scenario": "4-single-turn-partial-fail-plus-evaluator-crash",
+        "notes": "One fail + one evaluator crash (judge raised an exception). status=partial — error takes priority over pass/fail when ≥1 evaluator errored. Top-level error field IS populated with the evaluatorsFailed summary. Per-evaluator error uses the 'Evaluator failed:' prefix and appends exception.message text.",
+        "evaluators_in_scores": ["fail", "error"],
+        "expected_status": "partial",
+        "expected_error_field_populated": true
+      },
+      "prompt": "How do I configure conditional access for guest accounts?",
+      "expected_response": "Covers Azure AD guest CA policies.",
+      "response": "Use the on-prem AD Users and Computers tool to block external logins.",
+      "scores": {
+        "relevance": { "score": 1.0, "result": "fail", "threshold": 3, "reason": "Response references on-prem AD instead of Azure AD." },
+        "coherence": { "result": "error", "error": "Evaluator failed: Connection timeout to Azure OpenAI endpoint after 30s" }
+      },
+      "status": "partial",
+      "error": {
+        "code": "evaluatorsFailed",
+        "message": "Agent response obtained. 1 of 2 evaluators failed to run."
+      }
+    },
+
+    {
+      "extensions": {
+        "scenario": "5-single-turn-partial-all-evaluators-errored",
+        "notes": "Response obtained, but every attempted evaluator errored (zero verdicts rendered). status=partial (not error) — the agent DID respond; we just couldn't fully evaluate it. Same unified message template as scenario 4, now reading '2 of 2' to indicate all evaluators errored. The 'Agent response obtained.' prefix distinguishes this case from scenario 6 (no response, status=error).",
+        "evaluators_in_scores": ["error", "error"],
+        "expected_status": "partial",
+        "expected_error_field_populated": true
+      },
+      "prompt": "List the top 5 security best practices for M365 tenants.",
+      "expected_response": "Covers MFA, conditional access, audit logging, DLP, least privilege.",
+      "response": "Here are five M365 security best practices: 1) MFA, 2) conditional access, 3) DLP, 4) audit logs, 5) least-privilege roles.",
+      "scores": {
+        "relevance": { "result": "error", "error": "Evaluator failed: Service rate limit exceeded after 3 retries" },
+        "coherence": { "result": "error", "error": "Evaluator failed: Connection timeout to Azure OpenAI endpoint after 30s" }
+      },
+      "status": "partial",
+      "error": {
+        "code": "evaluatorsFailed",
+        "message": "Agent response obtained. 2 of 2 evaluators failed to run."
+      }
+    },
+
+    {
+      "extensions": {
+        "scenario": "6-single-turn-error-no-response",
+        "notes": "Agent did not respond after retries. No evaluators attempted. status=error. Top-level error field IS populated with the request-failure cause template. This is the ONLY single-turn case producing status=error under v1.4.0.",
+        "evaluators_in_scores": [],
+        "expected_status": "error",
+        "expected_error_field_populated": true
+      },
+      "prompt": "What is Microsoft Graph API?",
+      "expected_response": "Microsoft Graph is a unified endpoint for M365 data.",
+      "response": "",
+      "scores": {},
+      "status": "error",
+      "error": {
+        "code": "agentRequestFailed",
+        "message": "Agent request failed: HTTP 503 Service Unavailable"
+      }
+    },
+
+    {
+      "extensions": {
+        "scenario": "7-multi-turn-partial-mixed-turn-outcomes",
+        "notes": "3-turn thread with no errored turns. Turn 1 uniformly passed; Turn 2 had a pass+error evaluator mix (partial); Turn 3 had a uniform-fail (status=fail). Per-turn statuses: [pass, partial, fail] — any partial turn drives thread to partial under FR-004's priority rules. Summary invariant: 1+1+1+0=3.",
+        "per_turn_statuses": ["pass", "partial", "fail"],
+        "expected_overall_status": "partial"
+      },
+      "name": "Seattle trip planning — mixed turn outcomes",
+      "conversation_id": "conv-abc-007",
+      "turns": [
+        {
+          "prompt": "I'm based in Seattle.",
+          "expected_response": "I can help with Seattle-related queries.",
+          "response": "Understood — I can help with Seattle questions.",
+          "scores": {
+            "relevance": { "score": 5.0, "result": "pass", "threshold": 3 },
+            "coherence": { "score": 5.0, "result": "pass", "threshold": 3 }
+          },
+          "status": "pass"
+        },
+        {
+          "prompt": "What's the weather like here?",
+          "expected_response": "Seattle has mild, rainy weather.",
+          "response": "Seattle tends to be rainy most of the year, especially in winter.",
+          "scores": {
+            "relevance": { "score": 5.0, "result": "pass", "threshold": 3, "reason": "Response addresses Seattle weather accurately." },
+            "coherence": { "result": "error", "error": "Evaluator failed: Connection timeout to Azure OpenAI endpoint after 30s" }
+          },
+          "status": "partial",
+          "error": {
+            "code": "evaluatorsFailed",
+            "message": "Agent response obtained. 1 of 2 evaluators failed to run."
+          }
+        },
+        {
+          "prompt": "What's the average temperature in Seattle in March?",
+          "expected_response": "Around 50°F (10°C).",
+          "response": "Seattle averages 80°F in March.",
+          "scores": {
+            "relevance": { "score": 1.0, "result": "fail", "threshold": 3, "reason": "Response is factually incorrect — Seattle's March averages are far below 80°F." },
+            "coherence": { "score": 2.0, "result": "fail", "threshold": 3, "reason": "Response contradicts well-known regional climate data." }
+          },
+          "status": "fail"
+        }
+      ],
+      "summary": {
+        "turns_total": 3,
+        "turns_passed": 1,
+        "turns_failed": 1,
+        "turns_partial": 1,
+        "turns_errored": 0,
+        "overall_status": "partial"
+      }
+    },
+
+    {
+      "extensions": {
+        "scenario": "8-multi-turn-error-any-errored-turn",
+        "notes": "3-turn thread with a mid-conversation request failure. Turn 1 uniformly passed; Turn 2's request failed; Turn 3 was downstream-skipped. Per-turn statuses: [pass, error, error] — under FR-004's priority rules, any errored turn drives the thread to error (the run didn't complete). The two error turns carry distinct error codes (agentRequestFailed vs turnSkipped) demonstrating the cascade. Summary invariant: 1+0+0+2=3.",
+        "per_turn_statuses": ["pass", "error", "error"],
+        "expected_overall_status": "error"
+      },
+      "name": "Conversation that aborted mid-thread",
+      "conversation_id": "conv-abc-008",
+      "turns": [
+        {
+          "prompt": "I'd like to plan a trip from SFO.",
+          "expected_response": "I can help with travel planning from SFO.",
+          "response": "Sure — I can help plan a trip from SFO.",
+          "scores": {
+            "relevance": { "score": 5.0, "result": "pass", "threshold": 3 },
+            "coherence": { "score": 5.0, "result": "pass", "threshold": 3 }
+          },
+          "status": "pass"
+        },
+        {
+          "prompt": "Book me a flight from SFO to SEA next Tuesday.",
+          "expected_response": "I can help with flight queries.",
+          "response": "",
+          "scores": {},
+          "status": "error",
+          "error": {
+            "code": "agentRequestFailed",
+            "message": "Agent request failed: DNS resolution failed for agent endpoint"
+          }
+        },
+        {
+          "prompt": "Prefer morning departure, aisle seat.",
+          "expected_response": "Noted.",
+          "response": "",
+          "scores": {},
+          "status": "error",
+          "error": {
+            "code": "turnSkipped",
+            "message": "Turn not attempted: preceding turn failed"
+          }
+        }
+      ],
+      "summary": {
+        "turns_total": 3,
+        "turns_passed": 1,
+        "turns_failed": 0,
+        "turns_partial": 0,
+        "turns_errored": 2,
+        "overall_status": "error"
+      }
+    }
+
+  ]
+}

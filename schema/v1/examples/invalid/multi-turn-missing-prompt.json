@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.2.0",
+  "items": [
+    {
+      "turns": [
+        {
+          "expected_response": "This turn is missing a prompt."
+        }
+      ]
+    }
+  ]
+}

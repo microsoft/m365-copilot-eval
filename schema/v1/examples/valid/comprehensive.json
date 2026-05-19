@@ -1,0 +1,117 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/M365-Copilot-Agent-Evals/refs/heads/main/schema/v1/eval-document.schema.json",
+  "schemaVersion": "1.1.0",
+  "metadata": {
+    "name": "Graph API Evaluation Set",
+    "description": "Test prompts for Microsoft Graph API knowledge",
+    "createdAt": "2026-01-20T10:00:00Z",
+    "createdBy": "eval-team",
+    "evaluatedAt": "2026-01-20T10:30:00Z",
+    "tags": ["graph", "api", "authentication"],
+    "agentId": "12345678-1234-1234-1234-123456789abc",
+    "agentName": "Graph Knowledge Agent",
+    "cliVersion": "1.2.0",
+    "extensions": {
+      "com.contoso.department": "engineering",
+      "com.contoso.priority": "high"
+    }
+  },
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "What is Microsoft Graph API?",
+      "expected_response": "Microsoft Graph API is a unified endpoint for accessing Microsoft services.",
+      "context": "User is a developer new to Microsoft ecosystem.",
+      "response": "Microsoft Graph API is a gateway to data and intelligence in Microsoft 365.",
+      "scores": {
+        "relevance": {
+          "score": 5.0,
+          "result": "pass",
+          "threshold": 3,
+          "reason": "Response directly addresses the query with accurate information.",
+          "evaluator": "azure-ai-relevance"
+        },
+        "coherence": {
+          "score": 5.0,
+          "result": "pass",
+          "threshold": 3,
+          "reason": "Response is well-structured and easy to follow.",
+          "evaluator": "azure-ai-coherence"
+        },
+        "groundedness": {
+          "score": 4.0,
+          "result": "pass",
+          "threshold": 3,
+          "reason": "Response is grounded in the provided context.",
+          "evaluator": "azure-ai-groundedness"
+        },
+        "toolCallAccuracy": {
+          "score": 5.0,
+          "result": "pass",
+          "threshold": 3,
+          "reason": "Tool calls are accurate and well-formed.",
+          "evaluator": "azure-ai-tool-accuracy"
+        },
+        "citations": {
+          "count": 2,
+          "result": "pass",
+          "threshold": 1,
+          "format": "bracket",
+          "citations": [
+            {
+              "index": 1,
+              "text": "Microsoft Graph is a unified API endpoint",
+              "source": "https://learn.microsoft.com/graph/overview"
+            },
+            {
+              "index": 2,
+              "text": "Access data and intelligence in Microsoft 365",
+              "source": "https://learn.microsoft.com/graph/use-the-api"
+            }
+          ]
+        }
+      },
+      "citations": [
+        {
+          "index": 1,
+          "text": "Microsoft Graph is a unified API endpoint",
+          "source": "https://learn.microsoft.com/graph/overview"
+        },
+        {
+          "index": 2,
+          "text": "Access data and intelligence in Microsoft 365",
+          "source": "https://learn.microsoft.com/graph/use-the-api"
+        }
+      ],
+      "extensions": {
+        "com.contoso.difficulty": "easy"
+      }
+    },
+    {
+      "prompt": "How do I authenticate with Microsoft Graph?",
+      "expected_response": "You can authenticate using OAuth 2.0 or client credentials flow.",
+      "evaluators": {
+        "ExactMatch": { "case_sensitive": false },
+        "PartialMatch": { "threshold": 0.5 }
+      },
+      "evaluators_mode": "replace",
+      "response": "You can authenticate using OAuth 2.0 or client credentials flow.",
+      "scores": {
+        "exactMatch": {
+          "match": true,
+          "result": "pass",
+          "reason": "Exact match found"
+        },
+        "partialMatch": {
+          "score": 1.0,
+          "result": "pass",
+          "threshold": 0.5,
+          "reason": "Match score: 1.000"
+        }
+      }
+    }
+  ]
+}

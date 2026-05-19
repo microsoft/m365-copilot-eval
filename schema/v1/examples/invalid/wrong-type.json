@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1.0.0",
+  "items": {
+    "prompt": "This should be an array, not an object"
+  }
+}
