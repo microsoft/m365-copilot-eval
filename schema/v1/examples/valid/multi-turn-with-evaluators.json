@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "name": "Expense Policy Flow",
+      "description": "Test that agent handles expense policy questions across turns",
+      "turns": [
+        {
+          "prompt": "I'm traveling to Seattle next week for a conference.",
+          "expected_response": "I can help with travel-related questions."
+        },
+        {
+          "prompt": "My dinner last night was $250. Is that okay?",
+          "expected_response": "The per-diem meal allowance is a maximum of $200.",
+          "evaluators": {
+            "Groundedness": { "threshold": 4 }
+          }
+        },
+        {
+          "prompt": "What should I do about the overage?",
+          "expected_response": "For expenses exceeding the policy limit, you'll need manager approval.",
+          "evaluators": {
+            "ExactMatch": { "case_sensitive": false }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    }
+  ]
+}
