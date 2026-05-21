@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/M365-Copilot-Agent-Evals/refs/heads/main/schema/v1/eval-document.schema.json",
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
   "schemaVersion": "1.1.0",
   "metadata": {
     "name": "Graph API Evaluation Set",

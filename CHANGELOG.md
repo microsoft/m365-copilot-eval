@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.8.0-preview.1 (2026-05-21)
+
+
+### Features
+
+* Add Auth Support for Linux and MacOS
+* **logging:** Route MSAL/Azure SDK logs through CLI logger
+
 ## 1.7.0-preview.1 (2026-05-13)
 
 
