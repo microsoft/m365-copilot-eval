@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/microsoft/M365-Copilot-Agent-Evals/refs/heads/main/schema/v1/eval-document.schema.json",
+  "$id": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
   "title": "M365 Copilot Eval Document",
   "description": "Schema for evaluation documents used by M365 Copilot Agent Evals CLI. Supports single-turn and multi-turn evaluations.",
   "type": "object",

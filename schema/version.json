@@ -1,5 +1,5 @@
 {
   "version": "1.4.0",
-  "schemaId": "https://raw.githubusercontent.com/microsoft/M365-Copilot-Agent-Evals/refs/heads/main/schema/v1/eval-document.schema.json",
+  "schemaId": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
   "description": "M365 Copilot Eval Document Schema"
 }

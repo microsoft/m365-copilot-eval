@@ -30,7 +30,15 @@ A CLI for evaluating M365 Copilot agents. Send prompts to your agent, get respon
 - Admin approval to run WORKIQ Client App for your tenant [here](https://github.com/microsoft/work-iq/blob/main/ADMIN-INSTRUCTIONS.md)
 - **Azure OpenAI endpoint, and API key** (see [Getting Variables](#-getting-variables) below)
 
-> Note: Authentication is currently supported on Windows only. Support for other operating systems is coming soon.
+> **Platform authentication support:**
+> - **Windows** — Windows Account Manager (WAM) broker, built-in.
+> - **macOS** — Company Portal broker. Install Microsoft Company Portal before running.
+>   - **Known limitation (Intel Macs):** Sign-in via the broker is currently failing on Intel-based Macs. Apple Silicon (M-series) Macs are not affected. The MSAL team is investigating; progress is tracked in [AzureAD/microsoft-authentication-library-for-python#908](https://github.com/AzureAD/microsoft-authentication-library-for-python/issues/908).
+> - **Linux / WSL** — Intune broker. Install the required system libraries first:
+>   ```bash
+>   sudo apt install libwebkit2gtk-4.1-0 libdbus-1-dev python3-gi gir1.2-secret-1 libubsan1
+>   ```
+>   If the required libraries are missing, the authentication library raises an `ImportError` instead of falling back to browser-based authentication — install the packages above before running.
 
 ## 🔧 Environment Setup
 
@@ -353,6 +361,8 @@ runevals --output ./reports/results.html
 ```
 
 > **⚠️ Debug log safety notice:** The `--log-level debug` option is opt-in and may include raw API payloads and response data in console output. Redaction is pattern-based (API keys, tokens, passwords, long mixed-case strings) and **will not catch arbitrary PII or custom credentials** embedded in prompts or responses. Do not share debug-level output publicly without manual review.
+
+> **Auth and SDK errors:** Warnings and errors from the Microsoft sign-in flow (MSAL) and Azure AI Evaluation SDK appear alongside the CLI's own diagnostics — useful when a run fails to authenticate or an evaluator can't reach Azure. Routine SDK chatter (token cache hits, HTTP retries) is hidden by default. If you're troubleshooting an auth or evaluator issue and want to see everything those libraries report, add `--log-level debug`.
 
 ### Optional: Add Shortcuts to package.json
 
