@@ -146,13 +146,15 @@
       "description": "Collection of evaluation scores for an item. Each entry is either a valid result (ValidScore variants) or an errored record (ErroredScore) under the discriminated oneOf.",
       "additionalProperties": true,
       "properties": {
-        "relevance":    { "$ref": "#/$defs/EvalScore",         "description": "Relevance score (1-5) or errored entry" },
-        "coherence":    { "$ref": "#/$defs/EvalScore",         "description": "Coherence score (1-5) or errored entry" },
-        "groundedness": { "$ref": "#/$defs/EvalScore",         "description": "Groundedness score (1-5) or errored entry" },
-        "similarity":   { "$ref": "#/$defs/EvalScore",         "description": "Similarity score (1-5) or errored entry" },
-        "citations":    { "$ref": "#/$defs/CitationScore",     "description": "Citation evaluation result or errored entry" },
-        "exactMatch":   { "$ref": "#/$defs/ExactMatchScore",   "description": "Exact match evaluation result or errored entry" },
-        "partialMatch": { "$ref": "#/$defs/PartialMatchScore", "description": "Partial match evaluation result or errored entry" }
+        "relevance":       { "$ref": "#/$defs/EvalScore",            "description": "Relevance score (1-5) or errored entry" },
+        "coherence":       { "$ref": "#/$defs/EvalScore",            "description": "Coherence score (1-5) or errored entry" },
+        "groundedness":    { "$ref": "#/$defs/EvalScore",            "description": "Groundedness score (1-5) or errored entry" },
+        "similarity":      { "$ref": "#/$defs/EvalScore",            "description": "Similarity score (1-5) or errored entry" },
+        "citations":       { "$ref": "#/$defs/CitationScore",        "description": "Citation evaluation result or errored entry" },
+        "exactMatch":      { "$ref": "#/$defs/ExactMatchScore",      "description": "Exact match evaluation result or errored entry" },
+        "partialMatch":    { "$ref": "#/$defs/PartialMatchScore",    "description": "Partial match evaluation result or errored entry" },
+        "retrievalQuery":  { "$ref": "#/$defs/RetrievalQueryScore",  "description": "RetrievalQuery evaluation result or errored entry" },
+        "retrievalResult": { "$ref": "#/$defs/RetrievalResultScore", "description": "RetrievalResult evaluation result or errored entry" }
       }
     },
     "EvalScore": {
@@ -231,6 +233,72 @@
         "reason":    { "type": "string", "description": "Explanation of the match result" }
       }
     },
+    "RetrievalQueryScore": {
+      "description": "RetrievalQuery evaluator result — valid result OR errored-evaluator record.",
+      "oneOf": [
+        { "$ref": "#/$defs/RetrievalQueryScoreValid" },
+        { "$ref": "#/$defs/ErroredScore" }
+      ]
+    },
+    "RetrievalQueryScoreValid": {
+      "type": "object",
+      "description": "Valid RetrievalQuery result. Score is 1.0 on pass, 0.0 on fail.",
+      "required": ["score", "result", "threshold", "diagnostic_code"],
+      "additionalProperties": true,
+      "properties": {
+        "score":            { "type": "number", "minimum": 0, "maximum": 1, "description": "1.0 (pass) or 0.0 (fail)" },
+        "result":           { "type": "string", "enum": ["pass", "fail"], "description": "Pass/fail result" },
+        "threshold":        { "type": "number", "description": "Always 1.0 for this evaluator" },
+        "diagnostic_code":  { "type": "string", "enum": ["pass", "no_matching_query", "required_terms_missing", "excluded_terms_found", "mixed_term_failure", "retrieval_failure"], "description": "Distinct failure mode or 'pass' (see contracts/retrieval-query-evaluator.md)" },
+        "reason":           { "type": "string", "description": "Human-readable explanation" },
+        "matched_queries":  { "type": "array", "items": { "type": "string" }, "description": "queryString values that matched the configured selector" },
+        "includes_missing": { "type": "array", "items": { "type": "string" }, "description": "Required terms (from `includes`) that were not present in any matched queryString" },
+        "excludes_found":   { "type": "array", "items": { "type": "string" }, "description": "Forbidden terms (from `excludes`) that were present in a matched queryString" }
+      }
+    },
+    "RetrievalResultScore": {
+      "description": "RetrievalResult evaluator result — valid result OR errored-evaluator record.",
+      "oneOf": [
+        { "$ref": "#/$defs/RetrievalResultScoreValid" },
+        { "$ref": "#/$defs/ErroredScore" }
+      ]
+    },
+    "RetrievalResultScoreValid": {
+      "type": "object",
+      "description": "Valid RetrievalResult result. Score is the proportion of expected_items matched (0.0–1.0).",
+      "required": ["score", "result", "threshold", "diagnostic_code"],
+      "additionalProperties": true,
+      "properties": {
+        "score":              { "type": "number", "minimum": 0, "maximum": 1, "description": "Proportion of expected_items matched (1.0 on full pass)" },
+        "result":             { "type": "string", "enum": ["pass", "fail"], "description": "Pass/fail result" },
+        "threshold":          { "type": "number", "description": "Always 1.0 for this evaluator (all configured checks must pass)" },
+        "diagnostic_code":    { "type": "string", "enum": ["pass", "not_retrieved", "count_below_minimum", "error"], "description": "Distinct failure mode or 'pass' (see contracts/retrieval-result-evaluator.md)" },
+        "reason":             { "type": "string", "description": "Human-readable explanation" },
+        "results_evaluated":  { "type": "integer", "minimum": 0, "description": "Number of candidate retrieval hits within max_rank that were evaluated" },
+        "matched_items":      { "type": "array", "items": { "$ref": "#/$defs/RetrievalMatchedItem" }, "description": "Expected items whose retrievalExtract_contains text was found in a candidate hit" },
+        "missing_items":      { "type": "array", "items": { "$ref": "#/$defs/RetrievalMissingItem" }, "description": "Expected items whose text was not found (canonical 'did not pass' list)" },
+        "extract_failures":   { "type": "array", "items": { "$ref": "#/$defs/RetrievalMissingItem" }, "description": "Subset of missing_items where the capability returned hits but none contained the expected text" }
+      }
+    },
+    "RetrievalMatchedItem": {
+      "type": "object",
+      "description": "One matched item from a RetrievalResult run.",
+      "required": ["extractMatch"],
+      "additionalProperties": false,
+      "properties": {
+        "extractMatch":  { "type": "string", "description": "The configured retrievalExtract_contains text that was found" },
+        "matchedHitUrl": { "type": "string", "description": "webUrl of the retrieval hit whose extract satisfied the assertion (diagnostic-only — not part of the V1 assertion contract)" }
+      }
+    },
+    "RetrievalMissingItem": {
+      "type": "object",
+      "description": "One missing item from a RetrievalResult run.",
+      "required": ["extractMatch"],
+      "additionalProperties": false,
+      "properties": {
+        "extractMatch": { "type": "string", "description": "The configured retrievalExtract_contains text that was not found" }
+      }
+    },
     "ErroredScore": {
       "type": "object",
       "description": "Per-evaluator entry for an evaluator that did not produce a result.",
@@ -261,23 +329,89 @@
     },
     "EvaluatorMap": {
       "type": "object",
-      "description": "Map of evaluator names to their configuration options",
-      "propertyNames": {
-        "enum": ["Relevance", "Coherence", "Groundedness", "Similarity", "Citations", "ExactMatch", "PartialMatch"]
-      },
-      "additionalProperties": {
-        "$ref": "#/$defs/EvaluatorOptions"
-      }
-    },
-    "EvaluatorOptions": {
-      "type": "object",
-      "description": "Evaluator configuration options. Use empty object {} for defaults.",
+      "description": "Map of evaluator names to their configuration options. Each evaluator key has its own option schema; unknown keys are rejected.",
       "additionalProperties": false,
       "properties": {
-        "threshold":       { "type": "number", "description": "Pass/fail threshold. Range depends on evaluator type: 1-5 for LLM evaluators (default: 3), >= 1 integer for Citations (default: 1), 0.0-1.0 for PartialMatch (default: 0.5)." },
-        "citation_format": { "type": "string", "examples": ["oai_unicode", "bracket", "mixed"], "description": "Citation format for detection. Default: oai_unicode." },
-        "case_sensitive":  { "type": "boolean", "default": false, "description": "Case-sensitive matching for ExactMatch/PartialMatch" },
-        "options":         { "type": "object", "additionalProperties": true, "description": "Evaluator-specific configuration" }
+        "Relevance":       { "$ref": "#/$defs/LlmEvaluatorOptions" },
+        "Coherence":       { "$ref": "#/$defs/LlmEvaluatorOptions" },
+        "Groundedness":    { "$ref": "#/$defs/LlmEvaluatorOptions" },
+        "Similarity":      { "$ref": "#/$defs/LlmEvaluatorOptions" },
+        "Citations":       { "$ref": "#/$defs/CitationsOptions" },
+        "ExactMatch":      { "$ref": "#/$defs/ExactMatchOptions" },
+        "PartialMatch":    { "$ref": "#/$defs/PartialMatchOptions" },
+        "RetrievalQuery":  { "$ref": "#/$defs/RetrievalQueryOptions" },
+        "RetrievalResult": { "$ref": "#/$defs/RetrievalResultOptions" }
+      }
+    },
+    "LlmEvaluatorOptions": {
+      "type": "object",
+      "description": "Options for LLM-based evaluators (Relevance, Coherence, Groundedness, Similarity). Use empty object {} for defaults.",
+      "additionalProperties": false,
+      "properties": {
+        "threshold": { "type": "number", "minimum": 1, "maximum": 5, "description": "Pass/fail threshold on the 1-5 LLM scale (default: 3)." }
+      }
+    },
+    "CitationsOptions": {
+      "type": "object",
+      "description": "Options for the Citations evaluator.",
+      "additionalProperties": false,
+      "properties": {
+        "threshold":       { "type": "integer", "minimum": 1, "description": "Minimum required number of citations (default: 1)." },
+        "citation_format": { "type": "string", "examples": ["oai_unicode", "bracket", "mixed"], "description": "Citation format for detection. Default: oai_unicode." }
+      }
+    },
+    "ExactMatchOptions": {
+      "type": "object",
+      "description": "Options for the ExactMatch evaluator.",
+      "additionalProperties": false,
+      "properties": {
+        "case_sensitive": { "type": "boolean", "default": false, "description": "Case-sensitive matching (default: false)." }
+      }
+    },
+    "PartialMatchOptions": {
+      "type": "object",
+      "description": "Options for the PartialMatch evaluator.",
+      "additionalProperties": false,
+      "properties": {
+        "threshold":      { "type": "number", "minimum": 0, "maximum": 1, "description": "Minimum partial-match score required for pass (default: 0.5)." },
+        "case_sensitive": { "type": "boolean", "default": false, "description": "Case-sensitive matching (default: false)." }
+      }
+    },
+    "RetrievalQueryOptions": {
+      "type": "object",
+      "description": "Options for the RetrievalQuery evaluator. `threshold` is pinned by contract and not configurable.",
+      "additionalProperties": false,
+      "required": ["capability", "selector"],
+      "properties": {
+        "capability": { "type": "string", "minLength": 1, "description": "Scopes evaluation to retrieval executions with this CapabilityExecution.name (e.g., 'OneDriveAndSharePoint', 'Email', 'TeamsMessages', 'Meetings', 'People', 'GraphConnectors')." },
+        "selector":   { "type": "string", "minLength": 1, "description": "Case-insensitive substring matched against queryString. filterExpression is excluded from selector matching in V1." },
+        "includes":   { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Substrings that MUST all appear in the matched queryString." },
+        "excludes":   { "type": "array", "items": { "type": "string", "minLength": 1 }, "description": "Substrings that MUST NOT appear in the matched queryString." }
+      }
+    },
+    "RetrievalResultOptions": {
+      "type": "object",
+      "description": "Options for the RetrievalResult evaluator. `capability` is required, and at least one of `expected_items` or `min_expected_count` must be set. `threshold` is pinned by contract and not configurable.",
+      "additionalProperties": false,
+      "required": ["capability"],
+      "anyOf": [
+        { "required": ["expected_items"] },
+        { "required": ["min_expected_count"] }
+      ],
+      "properties": {
+        "capability":         { "type": "string", "minLength": 1, "description": "Scopes evaluation to retrieval executions with this CapabilityExecution.name." },
+        "max_rank":           { "type": "integer", "minimum": 1, "default": 10, "description": "Only evaluate hits within this rank (default 10)." },
+        "min_expected_count": { "type": "integer", "minimum": 1, "description": "Minimum number of results required within max_rank for the scoped capability. Must be >= 1; omit the field entirely if no count assertion is desired." },
+        "expected_items":     { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/RetrievalExpectedItem" }, "description": "Extract-content assertions. URL-based matching is not supported in V1." }
+      }
+    },
+    "RetrievalExpectedItem": {
+      "type": "object",
+      "description": "A single expected item for RetrievalResult. V1 strict: webUrl is rejected — use a distinctive phrase from the expected resource's content as retrievalExtract_contains instead.",
+      "required": ["retrievalExtract_contains"],
+      "additionalProperties": false,
+      "properties": {
+        "retrievalExtract_contains": { "type": "string", "minLength": 1, "description": "Case-insensitive substring that must appear in at least one retrieval hit's content extract within the scoped capability and max_rank." }
       }
     },
     "Citation": {
