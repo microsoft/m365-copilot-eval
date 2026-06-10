@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.5.0",
+  "items": [
+    {
+      "prompt": "Summarize the Project Falcon kick-off.",
+      "evaluators": {
+        "RetrievalQuery": {
+          "selector": "Falcon"
+        }
+      }
+    }
+  ]
+}

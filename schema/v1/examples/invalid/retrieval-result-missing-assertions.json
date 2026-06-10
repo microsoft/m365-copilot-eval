@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.5.0",
+  "items": [
+    {
+      "prompt": "What is our expense policy?",
+      "evaluators": {
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 5
+        }
+      }
+    }
+  ]
+}
