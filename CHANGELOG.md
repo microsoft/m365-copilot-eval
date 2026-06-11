@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.10.1-preview.1 (2026-06-11)
+
+
+### Bug Fixes
+
+* include .prompty flow files in published npm package.
+
+## 1.10.0-preview.1 (2026-06-10)
+
+
+### Features
+
+* **auth:** add DefaultAzureCredential support for Azure OpenAI
+* **evaluators:** add retrieval diagnostics to evaluation output
+* **evaluators:** use LLM entailment judge for retrieval extract assertions
+* support custom evaluators
+
+
+### Bug Fixes
+
+* **#375,#376:** configurable A2A request timeout and socket-timeout retry
+* resolve debug log redaction false positives on agent IDs and URLs
+
+## 1.9.0-preview.1 (2026-05-26)
+
+
+### Features
+
+* **evaluators:** Add retrieval query and retrieval result evaluators
+
 ## 1.8.0-preview.1 (2026-05-21)
 
 
