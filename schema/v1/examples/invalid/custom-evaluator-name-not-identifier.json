@@ -1,0 +1,12 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
+  "schemaVersion": "1.6.0",
+  "items": [
+    {
+      "prompt": "What is Microsoft 365?",
+      "evaluators": {
+        "1bad_name": { "threshold": 3 }
+      }
+    }
+  ]
+}

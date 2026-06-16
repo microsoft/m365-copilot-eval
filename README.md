@@ -173,6 +173,59 @@ You need both the endpoint URL and API key from your Azure OpenAI resource for "
 
 **Security tip:** Store keys and endpoints securely and never commit to source control.
 
+### 4. Azure OpenAI Authentication Mode
+
+By default, the CLI authenticates to Azure OpenAI using an API key (`AZURE_AI_API_KEY`). If your organization disables key-based access or you prefer keyless authentication, you can use `DefaultAzureCredential` (Microsoft Entra ID) instead.
+
+**Option A: API Key (default)**
+
+Set `AZURE_AI_API_KEY` in your env file — the CLI uses it automatically.
+
+**Option B: DefaultAzureCredential (keyless)**
+
+1. Sign in to Azure CLI: `az login --tenant <your-tenant-id>`
+2. Assign the **Cognitive Services OpenAI User** role to your identity on the Azure OpenAI resource
+3. Remove or leave `AZURE_AI_API_KEY` empty in your env file
+4. Run the CLI — it auto-detects the missing key and uses `DefaultAzureCredential`
+
+You can also explicitly select the auth mode:
+
+```bash
+# Explicit keyless authentication
+runevals --azure-ai-auth-mode default-credential
+
+# Explicit API key authentication
+runevals --azure-ai-auth-mode key
+```
+
+**Fallback behavior (auto-detect):**
+
+| `AZURE_AI_API_KEY` set? | `--azure-ai-auth-mode` flag | Auth used |
+|---|---|---|
+| ✅ Yes | _(not provided)_ | API key |
+| ❌ No | _(not provided)_ | DefaultAzureCredential |
+| — | `key` | API key (fails if key missing) |
+| — | `default-credential` | DefaultAzureCredential |
+
+> **Note:** `DefaultAzureCredential` tries multiple credential sources in order: Azure CLI, Azure PowerShell, environment variables, managed identity, and more. See [Azure Identity docs](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential) for details.
+
+### Advanced: Request Timeout & Retries (Optional)
+
+Calls to the Work IQ A2A agent use sensible defaults that work for most workloads. For long-running agents (multi-step reasoning, large tool calls, slow downstream services) you can tune the HTTP request behavior with these optional environment variables:
+
+| Variable | Default | Description |
+|---|---|---|
+| `WORKIQ_REQUEST_TIMEOUT_SECS` | `300` | HTTP request timeout, in seconds, applied to each prompt/response request sent to the agent. Increase it if agent responses routinely exceed five minutes. Invalid or non-positive values fall back to the default. (Agent discovery and agent-card resolution use a fixed 300s timeout and are not affected by this setting.) |
+| `WORKIQ_REQUEST_MAX_ATTEMPTS` | `4` | Maximum number of attempts (initial try + retries) for an agent request. Retries cover transient failures: retryable HTTP statuses (`429`, `503`, `504`) and socket timeouts. Values below `1` or non-integers fall back to the default. |
+
+```bash
+# Example: allow a bit more time per request and one extra retry
+WORKIQ_REQUEST_TIMEOUT_SECS="420"
+WORKIQ_REQUEST_MAX_ATTEMPTS="5"
+```
+
+> **Note:** Transient failures (retryable HTTP statuses and socket timeouts) are retried for both single-turn prompts and individual multi-turn turns. Because a timed-out turn may have already been processed server-side, a multi-turn retry can occasionally duplicate that turn in the conversation; the agent is still expected to respond with the correct content. HTTP `401` responses are handled separately by a single automatic token refresh.
+
 ## 🚀 Quick Start
 
 Now that you have your environment variables set up, you're ready to run evaluations!
@@ -291,6 +344,21 @@ Use `default_evaluators` to set file-level defaults, and per-item `evaluators` w
 | _(none)_ | Inherits file-level `default_evaluators`, or system defaults (Relevance, Coherence) if not set. |
 
 See `schema/v1/examples/` in the package for more examples including per-turn evaluator overrides, mixed single/multi-turn files, and output format.
+
+### Custom Evaluators (New in Schema v1.6.0)
+
+In addition to the 10 built-in evaluators, you can define your own **custom LLM-judge evaluators** for domain-specific scoring (regulatory compliance, brand tone, custom relevance rubrics, etc.). Drop a `.prompty` file and a `.py` wrapper into `<your_project>/custom-evaluators/<name>/` and reference it from any eval document:
+
+```json
+"evaluators": {
+  "Relevance": {},
+  "professional_tone": { "threshold": 4 }
+}
+```
+
+Each custom evaluator pairs a `.prompty` file (the LLM judge prompt) with a `.py` wrapper class that invokes it and parses the result. This supports everything from simple single-prompt scoring to multi-step LLM calls, custom output parsing, and score aggregation.
+
+See [`custom-evaluators/README.md`](custom-evaluators/README.md) for the full authoring guide and reference examples (`professional_tone`, `consistency_check`, `answer_accuracy`).
 
 ### Auto-Upgrade Behavior
 
