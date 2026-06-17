@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.4.0",
+  "metadata": {
+    "name": "Agent starter evaluation",
+    "description": "Smoke tests for core agent behavior.",
+    "tags": ["starter", "single-turn"]
+  },
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "What can this agent help me with?",
+      "expected_response": "The agent explains its supported scope without claiming unsupported capabilities."
+    },
+    {
+      "prompt": "Summarize the latest status for the Contoso renewal.",
+      "expected_response": "The agent summarizes available status and avoids inventing facts when source data is unavailable."
+    }
+  ]
+}
