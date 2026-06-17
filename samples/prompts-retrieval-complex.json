@@ -1,6 +1,7 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/M365-Copilot-Agent-Evals/main/schema/v1/eval-document.schema.json",
-  "description": "Happy-path bundle for the new RetrievalQuery and RetrievalResult evaluators (PR #360). 8 prompts that should all PASS, each grounded in the Zava claims insurance policy guidebook (2026-03-25-zava-claims-insurance-policy-guidebook.docx) on the ZavaClaims SharePoint site. Items 7 and 8 are multi-section prompts that force the agent to perform TWO separate retrieval fetches.",
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
+  "schemaVersion": "1.6.0",
+  "description": "This dataset evaluates the Zava Claims Agent that uses Zava claims insurance policy guidebook (2026-03-25-zava-claims-insurance-policy-guidebook.docx) to answer complex user questions. The document is present in a SharePoint site and is accessed by the agent through the ODSP Capability. We will use RetrievalQuery and RetrievalResult evaluators. 8 prompts that should all PASS, each grounded in the Zava claims insurance policy guidebook. Items 7 and 8 are multi-section prompts that force the agent to perform TWO separate retrieval fetches.",
   "default_evaluators": {
     "Relevance": {},
     "Coherence": {}
