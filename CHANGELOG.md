@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.9.0-preview.1 (2026-05-26)
+
+
+### Features
+
+* **evaluators:** Add retrieval query and retrieval result evaluators
+
 ## 1.8.0-preview.1 (2026-05-21)
 
 
