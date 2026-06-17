@@ -1,22 +1,25 @@
-[
+{
+  "schemaVersion": "1.4.0",
+  "items": [
     {
-        "prompt": "Schedule a meeting.",
-        "expected_response": "Sorry, I can't help with that."
+      "prompt": "Schedule a meeting.",
+      "expected_response": "Sorry, I can't help with that."
     },
     {
-        "prompt": "Book travel to Seattle.",
-        "expected_response": "Sorry, I can't help with that."
+      "prompt": "Book travel to Seattle.",
+      "expected_response": "Sorry, I can't help with that."
     },
     {
-        "prompt": "Create a report.",
-        "expected_response": "Sorry, I can't help with that."
+      "prompt": "Create a report.",
+      "expected_response": "Sorry, I can't help with that."
     },
     {
-        "prompt": "Set up access for a teammate.",
-        "expected_response": "Sorry, I can't help with that."
+      "prompt": "Set up access for a teammate.",
+      "expected_response": "Sorry, I can't help with that."
     },
     {
-        "prompt": "Send an email to Alex.",
-        "expected_response": "Sorry, I can't help with that."
+      "prompt": "Send an email to Alex.",
+      "expected_response": "Sorry, I can't help with that."
     }
-]
+  ]
+}

@@ -1,22 +1,25 @@
-[
-  {
-    "prompt": "An API call returns HTTP 429 (Too Many Requests). What should you do?",
-    "expected_response": "Respect Retry-After, implement exponential backoff with jitter, and avoid spamming retries. Surface a friendly message and proceed when rate limit resets."
-  },
-  {
-    "prompt": "You received HTTP 500 from a calendar API during create-event. How should the agent react?",
-    "expected_response": "Classify as transient unless known otherwise, capture correlation ID, retry with bounded backoff if idempotent, or ask the user to retry later. Don’t duplicate non-idempotent operations."
-  },
-  {
-    "prompt": "The storage API requires an ISO 8601 date but the user typed 'next Thursday'. What should happen?",
-    "expected_response": "Validate and normalize inputs. Ask clarifying questions for timezone/format, then convert to ISO 8601 before calling the API."
-  },
-  {
-    "prompt": "Sending email times out. What is a safe retry strategy?",
-    "expected_response": "Use idempotency keys to prevent duplicates, check delivery status before retry, and apply exponential backoff. Notify the user if delivery is uncertain."
-  },
-  {
-    "prompt": "The API returned 'InvalidParameter: userId is required'. What should the agent do?",
-    "expected_response": "Validate required fields before calling. Prompt the user for the missing userId and reattempt only after obtaining it."
-  }
-]
+{
+  "schemaVersion": "1.4.0",
+  "items": [
+    {
+      "prompt": "An API call returns HTTP 429 (Too Many Requests). What should you do?",
+      "expected_response": "Respect Retry-After, implement exponential backoff with jitter, and avoid spamming retries. Surface a friendly message and proceed when rate limit resets."
+    },
+    {
+      "prompt": "You received HTTP 500 from a calendar API during create-event. How should the agent react?",
+      "expected_response": "Classify as transient unless known otherwise, capture correlation ID, retry with bounded backoff if idempotent, or ask the user to retry later. Don’t duplicate non-idempotent operations."
+    },
+    {
+      "prompt": "The storage API requires an ISO 8601 date but the user typed 'next Thursday'. What should happen?",
+      "expected_response": "Validate and normalize inputs. Ask clarifying questions for timezone/format, then convert to ISO 8601 before calling the API."
+    },
+    {
+      "prompt": "Sending email times out. What is a safe retry strategy?",
+      "expected_response": "Use idempotency keys to prevent duplicates, check delivery status before retry, and apply exponential backoff. Notify the user if delivery is uncertain."
+    },
+    {
+      "prompt": "The API returned 'InvalidParameter: userId is required'. What should the agent do?",
+      "expected_response": "Validate required fields before calling. Prompt the user for the missing userId and reattempt only after obtaining it."
+    }
+  ]
+}
