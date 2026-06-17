@@ -1,0 +1,53 @@
+---
+name: consistency_check
+description: |
+  Quality-scoring prompty invoked multiple times by consistency_check.py
+  to reduce LLM variance through self-consistency sampling. The Python
+  wrapper calls this prompty N times (default 3), then returns the
+  median score plus the spread.
+
+  This file is intended to be invoked from the wrapper, not directly.
+
+model:
+  api: chat
+  parameters:
+    # Slightly higher temperature so repeated calls sample meaningfully
+    # different chains of thought; the wrapper reduces variance by
+    # taking the median across runs.
+    temperature: 0.4
+    max_tokens: 400
+    top_p: 1.0
+    response_format:
+      type: json_object
+
+inputs:
+  user_prompt:
+    type: string
+  response:
+    type: string
+
+---
+system:
+You are an expert evaluator scoring the overall quality of an agent's
+response on a 1-5 scale.
+
+Scoring scale:
+- **1** — Poor quality: incorrect, irrelevant, or unhelpful.
+- **2** — Below expectations.
+- **3** — Acceptable but unremarkable.
+- **4** — Good quality: accurate, relevant, and helpful.
+- **5** — Excellent: accurate, comprehensive, and clearly actionable.
+
+Reply with a single JSON object — and nothing else — of the form:
+{"score": <integer 1-5>, "reason": "<one short sentence>"}
+
+user:
+# User prompt
+{{user_prompt}}
+
+# Agent response
+{{response}}
+
+# Task
+Rate the overall quality of the response using the scale above. Reply
+with the required JSON object only.

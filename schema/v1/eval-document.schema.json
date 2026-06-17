@@ -69,6 +69,7 @@
         "evaluators_mode":   { "type": "string", "enum": ["extend", "replace"], "default": "extend", "description": "How per-prompt evaluators combine with defaults" },
         "citations":         { "type": "array", "items": { "$ref": "#/$defs/Citation" }, "description": "Citations included in the response" },
         "scores":            { "$ref": "#/$defs/ScoreCollection" },
+        "diagnostics":       { "$ref": "#/$defs/Diagnostics" },
         "status": {
           "type": "string",
           "enum": ["pass", "fail", "partial", "error"],
@@ -111,6 +112,7 @@
         "evaluators_mode":   { "type": "string", "enum": ["extend", "replace"], "default": "extend", "description": "How per-turn evaluators combine with defaults" },
         "citations":         { "type": "array", "items": { "$ref": "#/$defs/Citation" }, "description": "Citations included in the response" },
         "scores":            { "$ref": "#/$defs/ScoreCollection" },
+        "diagnostics":       { "$ref": "#/$defs/Diagnostics" },
         "status": {
           "type": "string",
           "enum": ["pass", "fail", "partial", "error"],
@@ -138,6 +140,58 @@
           "type": "string",
           "enum": ["pass", "fail", "partial", "error"],
           "description": "Overall status of the thread."
+        }
+      }
+    },
+    "Diagnostics": {
+      "type": "object",
+      "description": "Extensible container for output diagnostics, keyed by diagnostic category and positioned alongside scores.",
+      "additionalProperties": true,
+      "properties": {
+        "retrieval_executions": {
+          "type": "array",
+          "description": "Sanitized retrieval activity - what the retrieval system actually returned.",
+          "items": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "capability":      { "type": ["string", "null"], "description": "Retrieval capability execution name (e.g., OneDriveAndSharePoint)" },
+              "status":          { "type": ["string", "null"], "description": "Execution status (e.g., success)" },
+              "totalResultCount":{ "type": ["integer", "null"], "description": "Total results reported by the capability execution" },
+              "queries": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "queryString":      { "type": ["string", "null"], "description": "Query the agent issued" },
+                    "filterExpression": { "type": ["string", "null"], "description": "Filter expression applied" }
+                  }
+                }
+              },
+              "retrievalHits": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "properties": {
+                    "rank":   { "type": ["integer", "null"], "description": "Rank of the hit" },
+                    "webUrl": { "type": ["string", "null"], "description": "Source URL of the hit" },
+                    "extracts": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "properties": {
+                          "text": { "type": "string", "description": "Extract text snippet" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
     },
@@ -286,8 +340,10 @@
       "required": ["extractMatch"],
       "additionalProperties": false,
       "properties": {
-        "extractMatch":  { "type": "string", "description": "The configured retrievalExtract_contains text that was found" },
-        "matchedHitUrl": { "type": "string", "description": "webUrl of the retrieval hit whose extract satisfied the assertion (diagnostic-only — not part of the V1 assertion contract)" }
+        "extractMatch":   { "type": "string", "description": "The configured retrievalExtract_contains text that the LLM judge found supported by the retrieved evidence" },
+        "matchedHitUrl":  { "type": "string", "description": "webUrl of the retrieval hit that satisfied the assertion." },
+        "matchedHitRank": { "type": "integer", "description": "Rank of the first (best-ranked) hit whose evidence supported the claim. Lower is more relevant; always within the configured max_rank." },
+        "reason":         { "type": "string", "description": "The LLM judge's one-sentence rationale for the supported verdict" }
       }
     },
     "RetrievalMissingItem": {
@@ -296,7 +352,8 @@
       "required": ["extractMatch"],
       "additionalProperties": false,
       "properties": {
-        "extractMatch": { "type": "string", "description": "The configured retrievalExtract_contains text that was not found" }
+        "extractMatch": { "type": "string", "description": "The configured retrievalExtract_contains text that the LLM judge found not supported by the retrieved evidence" },
+        "reason":       { "type": "string", "description": "The LLM judge's one-sentence rationale for the not-supported verdict" }
       }
     },
     "ErroredScore": {
@@ -329,8 +386,11 @@
     },
     "EvaluatorMap": {
       "type": "object",
-      "description": "Map of evaluator names to their configuration options. Each evaluator key has its own option schema; unknown keys are rejected.",
-      "additionalProperties": false,
+      "description": "Map of evaluator names to their configuration options. Built-in evaluator keys (e.g. 'Relevance') have typed option schemas; any other valid identifier is treated as a user-authored custom LLM-judge evaluator (resolved at runtime from <project_root>/custom-evaluators/<name>/) and validated against CustomEvaluatorOptions.",
+      "propertyNames": {
+        "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
+      },
+      "additionalProperties": { "$ref": "#/$defs/CustomEvaluatorOptions" },
       "properties": {
         "Relevance":       { "$ref": "#/$defs/LlmEvaluatorOptions" },
         "Coherence":       { "$ref": "#/$defs/LlmEvaluatorOptions" },
@@ -341,6 +401,15 @@
         "PartialMatch":    { "$ref": "#/$defs/PartialMatchOptions" },
         "RetrievalQuery":  { "$ref": "#/$defs/RetrievalQueryOptions" },
         "RetrievalResult": { "$ref": "#/$defs/RetrievalResultOptions" }
+      }
+    },
+    "CustomEvaluatorOptions": {
+      "type": "object",
+      "description": "Options for user-authored custom LLM-judge evaluators. The `options` dict is forwarded to the wrapper's __init__ for evaluator-specific configuration.",
+      "additionalProperties": false,
+      "properties": {
+        "threshold": { "type": "number", "minimum": 1, "maximum": 5, "description": "Pass/fail threshold on the 1-5 LLM scale (default: 3)." },
+        "options":   { "type": "object", "additionalProperties": true, "description": "Evaluator-specific configuration forwarded to the wrapper's __init__ (open schema)." }
       }
     },
     "LlmEvaluatorOptions": {
@@ -411,7 +480,7 @@
       "required": ["retrievalExtract_contains"],
       "additionalProperties": false,
       "properties": {
-        "retrievalExtract_contains": { "type": "string", "minLength": 1, "description": "Case-insensitive substring that must appear in at least one retrieval hit's content extract within the scoped capability and max_rank." }
+        "retrievalExtract_contains": { "type": "string", "minLength": 1, "description": "A claim that an LLM judge must find supported by the retrieved evidence (the content extracts within the scoped capability and max_rank)." }
       }
     },
     "Citation": {
