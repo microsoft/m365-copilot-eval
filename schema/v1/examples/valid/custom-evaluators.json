@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
+  "schemaVersion": "1.6.0",
+  "metadata": {
+    "name": "Custom evaluators sample",
+    "description": "Demonstrates referencing a custom LLM-judge evaluator alongside a built-in one. The custom evaluator (professional_tone) is resolved at runtime from <project_root>/custom-evaluators/professional_tone/."
+  },
+  "items": [
+    {
+      "prompt": "How do I submit an expense report?",
+      "expected_response": "Use the Expense portal under MyHR.",
+      "evaluators": {
+        "Relevance": {},
+        "professional_tone": { "threshold": 4 }
+      }
+    },
+    {
+      "prompt": "Summarize the Q4 earnings call.",
+      "evaluators": {
+        "consistency_check": {
+          "threshold": 3,
+          "options": { "samples": 5 }
+        }
+      },
+      "evaluators_mode": "replace"
+    },
+    {
+      "prompt": "What is our company's PTO carryover policy?",
+      "expected_response": "Employees can carry over up to 5 unused PTO days into the next calendar year.",
+      "context": "PTO carryover policy: Employees may carry over a maximum of 5 unused vacation days to the following calendar year. Any unused days beyond this cap are forfeited on January 1.",
+      "evaluators": {
+        "answer_accuracy": { "threshold": 4 }
+      },
+      "evaluators_mode": "replace"
+    }
+  ]
+}
