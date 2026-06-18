@@ -1,21 +1,20 @@
 # M365 Copilot Agent Evaluations
 
-> **PUBLIC PREVIEW:** This tool is currently in public preview; refer to the instructions below to get started.
+> This tool is Generally Available. [Full documentation on Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-overview)
+>
+A CLI for evaluating M365 Copilot agents. Send prompts to your agent, get responses, and automatically score them with Azure AI Evaluation metrics.
 
-A CLI for evaluating M365 Copilot agents. Send prompts to your agent, get responses, and automatically score them with Azure AI Evaluation metrics (relevance, coherence, groundedness).
-- Send a batch (or interactive set) of prompts to a configured chat API endpoint.
-- Collect agent responses and evaluate them locally using Azure AI Evaluation SDK.
-- The CLI supports 7 evaluator types. Evaluators marked with ⭐ are **enabled by default**.
-
-| Evaluator | Type | Scale | Default Threshold | Default |
-|-----------|------|-------|-------------------|---------|
-| **Relevance** ⭐ | LLM-based | 1-5 | 3 | Yes |
-| **Coherence** ⭐ | LLM-based | 1-5 | 3 | Yes |
-| **Groundedness** | LLM-based | 1-5 | 3 | No |
-| **Similarity** | LLM-based | 1-5 | 3 | No |
-| **Citations** | Count-based | >= 0 | 1 | No |
-| **ExactMatch** | String match | boolean | N/A | No |
-| **PartialMatch** | String match | 0.0-1.0 | 0.5 | No |
+| Evaluator | Type | Scale | Default | Description|
+|-----------|------|-------|---------|------------|
+| Relevance ⭐ | LLM-based | 1-5 | Yes | Assesses how well the agent's response addresses the user's query.|
+| Coherence ⭐ | LLM-based | 1-5 | Yes | Measures the logical and orderly presentation of ideas in the agent's response.|
+| Groundedness | LLM-based | 1-5 | No | Assesses whether the agent's response is consistent with and supported by the provided grounding context.|
+| Similarity | LLM-based | 1-5 | No | Measures the degree of semantic similarity between the agent's response and a provided expected_response|
+| Citations | Count-based | ≥ 0 | No | Counts the number of citation references. |
+| RetrievalQuery | Non-LLM | pass/fail | No | Assesses if Copilot correctly translated user intent into retrieval queries.|
+| RetrievalResult | Non-LLM | pass/fail | No | Validates that expected resources actually appear in the documents, messages, and items returned by retrieval executions.|
+| ExactMatch | String match | boolean | No | Measures the degree of textual overlap between the agent's response and the expected_response. |
+| PartialMatch | String match | 0.0–1.0 | No | Performs a direct string comparison between the agent's response and the expected_response. |
 - Multiple input modes: command‑line list, JSON file, interactive.
 - Multiple output formats: console (colorized), JSON, CSV, HTML (auto‑opens report).
 
@@ -44,27 +43,32 @@ A CLI for evaluating M365 Copilot agents. Send prompts to your agent, get respon
 
 ### Install the Tool
 
-1. Make sure you have Node.js
-2. Run `npm install -g @microsoft/m365-copilot-eval`
+```bash
+# 1. Install
+npm install -g @microsoft/m365-copilot-eval
+
+# 2. Run from your agent project directory
+cd /path/to/your-agent-project
+runevals --version
+```
 
 ### Setup Steps
 
-Now, set up where you'll store your environment variables:
+Now, set the following environment variables wherever you are running your evals 
 
-**Are you using M365 Agents Toolkit (ATK)?**
-- - **Yes** → You already have `.env.local` in your project with `M365_TITLE_ID` (automatically used as your agent ID). Keep non-secret config there and put secrets like `AZURE_AI_API_KEY` in `.env.local.user` (never committed).
-- - **No** → Create a new `env/.env.dev` file in your project directory. You'll add all variables there.
+```bash
+TEAMS_APP_TENANT_ID="your-tenant-id" 
+AZURE_AI_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
+AZURE_AI_API_KEY="<your-api-key-from-azure-portal>"
+AZURE_AI_API_VERSION="2024-12-01-preview"  
+AZURE_AI_MODEL_NAME="gpt-4o-mini"      
+```
 
-The CLI loads environment variables from multiple sources (in order of precedence):
-
-1. **`.env.local`** in current directory (auto-detected, ideal for ATK projects)
-2. **`.env.local.user`** in current directory — or **`env/.env.local.user`** — auto-loaded as a user-specific override (never commit this file; put secrets here)
-3. **`env/.env.{environment}`** via `--env` flag (e.g., `--env dev` loads `env/.env.dev`)
-4. **System environment variables**
+Or store environment variables in a `.env` file for the tool to pick up:
 
 #### Option 1: For M365 Agents Toolkit (ATK) Projects
 
-ATK projects already check in `.env.local` with agent configuration. **Do not put secrets in `.env.local`** — use `.env.local.user` instead, which is loaded automatically and should be added to your `.gitignore`.
+ATK projects already check in `.env.local` with `M365_TITLE_ID`. **Do not put secrets in `.env.local`** — use `.env.local.user` instead, which is loaded automatically and should be added to your `.gitignore`.
 
 ```bash
 # .env.local (checked in — no secrets!)
@@ -105,75 +109,18 @@ AZURE_AI_API_VERSION="2024-12-01-preview"  # default
 AZURE_AI_MODEL_NAME="gpt-4o-mini"           # recommended
 TENANT_ID="<your-tenant-id>"
 ```
-
-You can also override the agent ID at runtime: `runevals --m365-agent-id "custom-id"`
+- If you are storing your environment variables in `.env.dev` or `.env.local` files, you can run `runevals --env dev` or `runevals --env local`
+- You can also override the agent ID at runtime: `runevals --m365-agent-id "custom-id"`
 
 ---
 
 ## 🔑 Getting Variables
 
-Now that you know what's needed, here's how to get the required values:
+📖 [How to get these values →](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-get-env-values)
 
-### 1. Tenant ID
+**New feature alert!** You can now use `DefaultAzureCredential` instead of `AZURE_AI_API_KEY` for authenticating your Azure LLM models! 
 
-Your Azure Active Directory (AAD) tenant ID.
-
-- If you have created your agent using Agents Toolkit, the tool automatically reads `TEAMS_APP_TENANT_ID` from `.env.local` and uses it as the tenant ID. No additional configuration is needed.
-- For non-ATK projects, set `TENANT_ID` in your env file.
-
-**How to obtain:**
-
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Search for "Azure Active Directory" or "Microsoft Entra ID"
-3. In the Overview section, you'll see **Tenant ID**
-4. Copy this value - this is your `TENANT_ID`
-
-Alternatively, if you have the Azure CLI installed:
-```bash
-az account show --query tenantId
-```
-
-### 2. Agent ID 
-- If you have created your agent using Agents Toolkit, the tool automatically reads `M365_TITLE_ID` from `.env.local` and constructs the agent ID.
-- If you don't know your agent-id, the tool offers agent selection when you try to submit a job. The agent selection has both the name, description, agent-id so that you can select the right agent.
-
-
-### 3. Azure OpenAI Endpoint and API Key
-
-You need both the endpoint URL and API key from your Azure OpenAI resource for "LLM as a Judge" evaluations. This Azure OpenAI endpoint can be in any tenant or account, and you will just configure the Evals tool using `AZURE_AI_OPENAI_ENDPOINT` and `AZURE_AI_API_KEY`.
-
-**How to obtain:**
-
-1. Go to [Azure Portal](https://portal.azure.com)
-2. Open Azure Portal. Search OpenAI in the search bar and select Azure OpenAi. 
-![Azure Portal search bar showing Azure OpenAI service](docs/images/image.png)
-3. once you select Azure OpenAi, then Create an AI Foundry Resource. 
-![Azure OpenAI service page with Create AI Foundry Resource button](docs/images/image-1.png)
-4. On the Create Foundry Resource, fill in the details and click 'Review + Create'.
-![Create AI Foundry Resource form with Review + Create button](docs/images/image-2.png)
-5. Once the resource deployed, go to foundry portal 
-![Resource deployment complete with link to AI Foundry portal](docs/images/image-3.png)
-6. At this point, you should be able to deploy an LLM model. 
-7. Select Models + Endpoints on the left rail
-![AI Foundry portal left navigation with Models + Endpoints selected](docs/images/image-4.png)
-8. Select Deploy Model -> Deploy base model (we recommend gpt-4o-mini model)
-![Deploy Model dropdown showing Deploy base model option](docs/images/image-5.png)
-9. Select Confirm, then select Customize
-![Model deployment confirmation dialog with Customize button](docs/images/image-6.png)
-10. Click on Customize and change the capacity to 50K tokens per minute
-![Model deployment customization showing token capacity setting](docs/images/image-7.png)
-![Token capacity set to 50K tokens per minute](docs/images/image-8.png)
-11. Hit deploy and wait for a few minutes for the model to deploy.
-12. Once the deployment finishes, you are redirected to the API endpoint and API_Key page.
-13. Copy the following values from that page.
-![API endpoint and API key values on the model deployment page](docs/images/image-10.png)
-14. Add all of these values to your `.env.dev` file as shown in the [Setup Steps](#setup-steps) above
-
-**Required model:** Ensure you have `gpt-4o-mini` (or similar) deployed in your Azure OpenAI resource.
-
-**Security tip:** Store keys and endpoints securely and never commit to source control.
-
-### 4. Azure OpenAI Authentication Mode
+### Azure OpenAI Authentication Mode
 
 By default, the CLI authenticates to Azure OpenAI using an API key (`AZURE_AI_API_KEY`). If your organization disables key-based access or you prefer keyless authentication, you can use `DefaultAzureCredential` (Microsoft Entra ID) instead.
 
@@ -276,7 +223,7 @@ A minimal eval document:
 
 ```json
 {
-  "schemaVersion": "1.2.0",
+  "schemaVersion": "1.6.0",
   "items": [
     {
       "prompt": "What is Microsoft 365?",
@@ -292,7 +239,7 @@ Use `default_evaluators` to set file-level defaults, and per-item `evaluators` w
 
 ```json
 {
-  "schemaVersion": "1.2.0",
+  "schemaVersion": "1.6.0",
   "default_evaluators": {
     "Relevance": {},
     "Coherence": {}
@@ -302,7 +249,7 @@ Use `default_evaluators` to set file-level defaults, and per-item `evaluators` w
       "prompt": "What is Microsoft Graph?",
       "expected_response": "A unified API endpoint for Microsoft services.",
       "evaluators": {
-        "Citations": { "citation_format": "mixed" }
+        "Groundedness": { "threshold": 4 }
       },
       "evaluators_mode": "extend"
     },
@@ -311,7 +258,33 @@ Use `default_evaluators` to set file-level defaults, and per-item `evaluators` w
       "turns": [
         {
           "prompt": "I spent $250 on dinner. Is that okay?",
-          "expected_response": "The per-diem meal allowance is $200."
+          "expected_response": "The per-diem meal allowance is $200.",
+          "evaluators": {
+            "Citations": { "citation_format": "mixed" },
+            "RetrievalQuery": {
+              "capability": "OneDriveAndSharePoint",
+              "selector": "dinner",
+              "includes": [
+                "allowance"
+              ],
+              "excludes": [
+                "restaurant"
+              ]
+            },
+            "RetrievalResult": {
+              "capability": "OneDriveAndSharePoint",
+              "max_rank": 5,
+              "expected_items": [
+                {
+                  "retrievalExtract_contains": "$200"
+                },
+                {
+                  "retrievalExtract_contains": "allowance"
+                }
+              ]
+            }
+          },
+          "evaluators_mode": "extend"
         },
         {
           "prompt": "What should I do about the overage?",
@@ -331,8 +304,8 @@ Use `default_evaluators` to set file-level defaults, and per-item `evaluators` w
 
 | Item | `evaluators_mode` | Active Evaluators | Why |
 |------|-------------------|-------------------|-----|
-| Single-turn (Graph) | `extend` | Relevance, Coherence, Citations | Per-prompt Citations **merged** with defaults |
-| Multi-turn turn 1 (dinner) | _(none)_ | Relevance, Coherence | **Inherits** file-level defaults |
+| Single-turn (Graph) | `extend` | Relevance, Coherence, Groundedness | Per-prompt Groundedness **merged** with defaults |
+| Multi-turn turn 1 (dinner) | `extend` | Relevance, Coherence, Citations, RetrievalQuery, RetrievalResult | Per-turn evaluators **merged** with defaults |
 | Multi-turn turn 2 (overage) | `replace` | ExactMatch | Per-turn ExactMatch **replaces** defaults entirely |
 
 ### Evaluator Modes
@@ -427,6 +400,10 @@ runevals --concurrency 1000 --prompts-file ./evals/evals.json   # Python CLI cla
 # Custom output location in your project
 runevals --output ./reports/results.html
 ```
+
+### Sample Scorecard
+
+![Sample Scorecard](docs/images/scorecard.png)
 
 > **⚠️ Debug log safety notice:** The `--log-level debug` option is opt-in and may include raw API payloads and response data in console output. Redaction is pattern-based (API keys, tokens, passwords, long mixed-case strings) and **will not catch arbitrary PII or custom credentials** embedded in prompts or responses. Do not share debug-level output publicly without manual review.
 

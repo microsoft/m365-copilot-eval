@@ -1,5 +1,57 @@
 # Changelog
 
+## 1.11.0 (2026-06-17)
+
+
+### Features
+
+* add accept-eula subcommand and EULA enforcement gate
+* Add agent selection for WorkIQ
+* Add Auth Support for Linux and MacOS
+* add JSON Schema validation and auto-upgrade for eval documents (WI-6081652)
+* Add Work IQ A2A support and refactor CLI agent clients
+* Added similarity evaluator for compatibility with MCS Evals.
+* **auth:** add DefaultAzureCredential support for Azure OpenAI
+* Auto-append `.declarativeAgent` suffix to short-form agent IDs
+* auto-load .env.local.user as user-specific secret override
+* automatic token refresh on HTTP 401 for long-running eval sessions
+* decompose main.py into focused modules
+* Default to WorkIQ A2A endpoint with Graph gateway fallback
+* Drop Sydney - Call WorkIQ API Exclusively
+* **evaluators:** add retrieval diagnostics to evaluation output
+* **evaluators:** Add retrieval query and retrieval result evaluators
+* **evaluators:** use LLM entailment judge for retrieval extract assertions
+* Implement Parallelization and Optimization
+* Implement PYTHON_PATH fallback for Python runtime setup
+* **logging:** add unified log-level controls and console diagnostics
+* **logging:** Route MSAL/Azure SDK logs through CLI logger
+* Reads Tenant ID from TEAMS_APP_TENANT_ID variable in ENV file in ATK …
+* **schema:** add multi-turn evaluation support (v1.2.0)
+* support custom evaluators
+* support multiturn evaluation
+* unified error reporting in evaluation output
+* **WI-6855059:** add agentName/cliVersion to schema, fix duplicate prompt loss, include default_evaluators in output
+* **WI-6855059:** implement per-prompt evaluator configuration
+
+
+### Bug Fixes
+
+* **#375,#376:** configurable A2A request timeout and socket-timeout retry
+* auto-create output directory when writing evaluation results
+* bold text in agent response shouldn't cause line break
+* **cli:** reduce duplicated progress logging logic
+* configure bootstrap-sha in release please
+* Handle WorkIQ A2A API response format change and full task state coverage
+* include .prompty flow files in published npm package.
+* Include timezone in 1P chat payload
+* Optimize Python CLI Installation Performance
+* point package.json repository and homepage to public npm repo
+* prevent flaky progress test from corrupting test runner IPC
+* **release:** reset release-please manifest to GA baseline
+* resolve custom evaluators, --prompts-file and --output paths relative to cwd (#371, #415)
+* resolve debug log redaction false positives on agent IDs and URLs
+* use dotenv.parse() in env-loader to handle inline comments in .env files
+
 ## 1.10.2-preview.1 (2026-06-16)
 
 
