@@ -206,6 +206,7 @@ The eval document schema is versioned independently from the CLI, following [Sem
 
 - **Schema location**: [`schema/v1/eval-document.schema.json`](schema/v1/eval-document.schema.json)
 - **Schema changelog**: [`schema/CHANGELOG.md`](schema/CHANGELOG.md)
+- **Authoring guide**: [`docs/authoring-datasets.md`](docs/authoring-datasets.md)
 
 > **New in Schema v1.2.0**: Multi-turn conversation threads — test context persistence across multiple turns within a shared conversation session. Each thread supports 1-20 turns.
 
