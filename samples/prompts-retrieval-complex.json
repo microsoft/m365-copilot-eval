@@ -1,0 +1,197 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
+  "schemaVersion": "1.6.0",
+  "description": "This dataset evaluates the Zava Claims Agent that uses Zava claims insurance policy guidebook (2026-03-25-zava-claims-insurance-policy-guidebook.docx) to answer complex user questions. The document is present in a SharePoint site and is accessed by the agent through the ODSP Capability. We will use RetrievalQuery and RetrievalResult evaluators. 8 prompts that should all PASS, each grounded in the Zava claims insurance policy guidebook. Items 7 and 8 are multi-section prompts that force the agent to perform TWO separate retrieval fetches.",
+  "default_evaluators": {
+    "Relevance": {},
+    "Coherence": {}
+  },
+  "items": [
+    {
+      "prompt": "For a dwelling claim on a property with a mortgage, when is a joint check with the mortgage company required?",
+      "expected_response": "Per §8.4 Claims Payment Methods of the Zava claims insurance policy guidebook, a Mortgage Company Joint Check is required when a dwelling claim on a mortgaged property exceeds $10,000. Source: 2026-03-25-zava-claims-insurance-policy-guidebook.docx (SharePoint: ZavaClaims / Shared Documents).",
+      "evaluators": {
+        "RetrievalQuery": {
+          "capability": "OneDriveAndSharePoint",
+          "selector": "mortgage",
+          "includes": ["mortgage", "joint check"],
+          "excludes": ["FileType:OneNote"]
+        },
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 5,
+          "expected_items": [
+            { "retrievalExtract_contains": "joint check" },
+            { "retrievalExtract_contains": "$10,000" }
+          ]
+        },
+        "Citations": { "citation_format": "mixed" },
+        "Groundedness": { "threshold": 5 }
+      },
+      "evaluators_mode": "extend",
+      "extensions": { "id": "happy-01-mortgage-joint-check-threshold" }
+    },
+
+    {
+      "prompt": "What standard deductible options are available for Zava HomeShield homeowners policies?",
+      "expected_response": "Per §6.1 Zava HomeShield — Coverage Limits & Structure of the policy guidebook, the standard deductible options for HomeShield homeowners policies are $500, $1,000, $2,500, $5,000, and $10,000. Source: 2026-03-25-zava-claims-insurance-policy-guidebook.docx.",
+      "evaluators": {
+        "RetrievalQuery": {
+          "capability": "OneDriveAndSharePoint",
+          "selector": "deductible",
+          "includes": ["deductible", "homeshield"],
+          "excludes": ["FileType:OneNote"]
+        },
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 5,
+          "expected_items": [
+            { "retrievalExtract_contains": "$500" },
+            { "retrievalExtract_contains": "$10,000" }
+          ]
+        }
+      },
+      "extensions": { "id": "happy-02-homeshield-deductible-tiers" }
+    },
+
+    {
+      "prompt": "What channels can a policyholder use to file a Zava insurance claim, and what are the hours of availability?",
+      "expected_response": "Per §8.1 Claim Filing Channels, policyholders can file a Zava insurance claim 24/7 through the web portal, the Zava Claims mobile app, or by phone (claims hotline). Source: 2026-03-25-zava-claims-insurance-policy-guidebook.docx.",
+      "evaluators": {
+        "RetrievalQuery": {
+          "capability": "OneDriveAndSharePoint",
+          "selector": "file",
+          "includes": ["file", "claim"]
+        },
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 10,
+          "expected_items": [
+            { "retrievalExtract_contains": "24/7" }
+          ]
+        }
+      },
+      "extensions": { "id": "happy-03-claim-filing-channels-24x7" }
+    },
+
+    {
+      "prompt": "What information is required when a policyholder files a new claim?",
+      "expected_response": "Per §8.2 Required Claim Information, the policyholder must provide their policy number, the date of loss, a description of what happened, the location of the loss, and contact information when filing a new claim. Source: 2026-03-25-zava-claims-insurance-policy-guidebook.docx.",
+      "evaluators": {
+        "RetrievalQuery": {
+          "capability": "OneDriveAndSharePoint",
+          "selector": "required",
+          "includes": ["claim", "information"]
+        },
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 10,
+          "expected_items": [
+            { "retrievalExtract_contains": "policy number" },
+            { "retrievalExtract_contains": "date of loss" }
+          ]
+        }
+      },
+      "extensions": { "id": "happy-04-required-claim-information" }
+    },
+
+    {
+      "prompt": "How long does the Zava claims investigation typically take after a claim is filed?",
+      "expected_response": "Per §8.3 Claims Timeline, the Zava claims investigation typically completes within 5–15 business days after the claim is filed. Source: 2026-03-25-zava-claims-insurance-policy-guidebook.docx.",
+      "evaluators": {
+        "RetrievalQuery": {
+          "capability": "OneDriveAndSharePoint",
+          "selector": "investigation",
+          "includes": ["business days"]
+        },
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 3,
+          "expected_items": [
+            { "retrievalExtract_contains": "5–15 business days" }
+          ]
+        },
+        "Citations": { "citation_format": "mixed" }
+      },
+      "evaluators_mode": "extend",
+      "extensions": { "id": "happy-05-investigation-timeline-tight-rank" }
+    },
+
+    {
+      "prompt": "What is a deductible in the context of a Zava insurance policy?",
+      "expected_response": "Per §2 Definitions & Key Terms, a deductible is the amount the insured must pay out-of-pocket before the insurer begins to pay on a covered claim. Source: 2026-03-25-zava-claims-insurance-policy-guidebook.docx.",
+      "evaluators": {
+        "RetrievalQuery": {
+          "capability": "OneDriveAndSharePoint",
+          "selector": "deductible",
+          "includes": ["deductible"],
+          "excludes": ["FileType:OneNote", "payroll", "salary"]
+        },
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 5,
+          "expected_items": [
+            { "retrievalExtract_contains": "out-of-pocket" }
+          ]
+        }
+      },
+      "extensions": { "id": "happy-06-deductible-definition-with-excludes" }
+    },
+
+    {
+      "prompt": "I'm filing a claim for water damage to my home. What information do I need to provide at filing, AND how long should I expect the investigation to take before I hear back?",
+      "expected_response": "When filing the water-damage claim, provide your policy number, the date of loss, a description of what happened, the location of the loss, and your contact information (§8.2 Required Claim Information). After filing, the Zava claims investigation typically completes within 5–15 business days (§8.3 Claims Timeline). Source: 2026-03-25-zava-claims-insurance-policy-guidebook.docx.",
+      "evaluators": {
+        "RetrievalQuery": {
+          "capability": "OneDriveAndSharePoint",
+          "selector": "claim",
+          "includes": ["claim"]
+        },
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 10,
+          "min_expected_count": 1,
+          "expected_items": [
+            { "retrievalExtract_contains": "policy number" },
+            { "retrievalExtract_contains": "5–15 business days" }
+          ]
+        },
+        "Citations": { "citation_format": "mixed", "threshold": 1 },
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend",
+      "extensions": {
+        "id": "happy-07-complex-two-fetch-required-info-and-timeline",
+        "notes": "Complex prompt — agent MUST perform two distinct retrievals (one for §8.2, one for §8.3). RetrievalResult.min_expected_count=2 plus two verbatim extracts from two different sections enforces this."
+      }
+    },
+
+    {
+      "prompt": "I have a Zava HomeShield policy with a mortgage on the property. What deductible options am I choosing from, and at what claim amount would Zava issue a joint check with my mortgage company?",
+      "expected_response": "Your HomeShield standard deductible options are $500, $1,000, $2,500, $5,000, and $10,000 (§6.1 Zava HomeShield — Coverage Limits & Structure). On a mortgaged property, Zava issues a Mortgage Company Joint Check when the dwelling claim exceeds $10,000 (§8.4 Claims Payment Methods). Source: 2026-03-25-zava-claims-insurance-policy-guidebook.docx.",
+      "evaluators": {
+        "RetrievalQuery": {
+          "capability": "OneDriveAndSharePoint",
+          "selector": "homeshield",
+          "includes": ["homeshield"]
+        },
+        "RetrievalResult": {
+          "capability": "OneDriveAndSharePoint",
+          "max_rank": 10,
+          "min_expected_count": 1,
+          "expected_items": [
+            { "retrievalExtract_contains": "$500" },
+            { "retrievalExtract_contains": "joint check" }
+          ]
+        },
+        "Citations": { "citation_format": "mixed", "threshold": 1 },
+        "Groundedness": { "threshold": 4 }
+      },
+      "evaluators_mode": "extend",
+      "extensions": {
+        "id": "happy-08-complex-two-fetch-deductibles-and-mortgage-threshold",
+        "notes": "Complex prompt — agent MUST perform two distinct retrievals (§6.1 HomeShield tiers AND §8.4 mortgage joint check). min_expected_count=2 plus two verbatim extracts from two different sections enforces this."
+      }
+    }
+  ]
+}
