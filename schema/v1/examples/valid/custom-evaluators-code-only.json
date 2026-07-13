@@ -1,0 +1,29 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
+  "schemaVersion": "1.7.0",
+  "metadata": {
+    "name": "Code-only custom evaluator sample",
+    "description": "Demonstrates a code-only (non-LLM) custom evaluator. The forbidden_terms evaluator is resolved at runtime from <project_root>/custom-evaluators/forbidden_terms/, which contains only forbidden_terms.py (no .prompty), so it runs as a pure Python check and needs no Azure OpenAI configuration."
+  },
+  "items": [
+    {
+      "prompt": "Draft a short reply confirming the meeting time.",
+      "evaluators": {
+        "forbidden_terms": {
+          "threshold": 1,
+          "options": { "terms": ["lorem", "ipsum"], "case_sensitive": false }
+        }
+      },
+      "evaluators_mode": "replace"
+    },
+    {
+      "prompt": "Summarize the policy in two sentences.",
+      "evaluators": {
+        "Relevance": {},
+        "forbidden_terms": {
+          "options": { "terms": ["TODO", "FIXME"] }
+        }
+      }
+    }
+  ]
+}

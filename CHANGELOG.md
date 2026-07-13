@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.12.0 (2026-07-10)
+
+
+### Features
+
+* Add --account &lt;account&gt; CLI flag for selecting MSAL account
+* Add Copilot SDK as alternative LLM judge backend
+* Support gpt-5x judge models via Foundry cloud evaluation
+* support non-LLM custom evaluators
+
 ## 1.11.0 (2026-06-17)
 
 

@@ -53,7 +53,6 @@ class ConsistencyCheckEvaluator:
             source=os.path.join(os.path.dirname(__file__), "consistency_check.prompty"),
             model={"configuration": prepared},
         )
-        self._threshold = threshold
         # Clamp to [1, _MAX_SAMPLES]: each sample is one LLM call, so cap the
         # blast radius of a copied-and-edited "samples" value.
         self._samples = min(
@@ -85,9 +84,7 @@ class ConsistencyCheckEvaluator:
 
         if not scores:
             return {
-                "result": "error",
                 "error": "; ".join(errors) or "no successful samples",
-                "threshold": self._threshold,
             }
 
         # round() is banker's rounding (half-to-even), so an even sample count
@@ -102,9 +99,8 @@ class ConsistencyCheckEvaluator:
         if errors:
             reason = f"{reason}; errors: {'; '.join(errors)}"
 
+        # Return only score + reason — the framework derives result/threshold.
         return {
             "score": median_score,
-            "threshold": self._threshold,
-            "result": "pass" if median_score >= self._threshold else "fail",
             "reason": reason,
         }

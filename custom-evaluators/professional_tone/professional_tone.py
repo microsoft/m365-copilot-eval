@@ -36,7 +36,6 @@ class ProfessionalToneEvaluator:
             source=os.path.join(os.path.dirname(__file__), "professional_tone.prompty"),
             model={"configuration": prepared},
         )
-        self._threshold = threshold
 
     def __call__(
         self,
@@ -51,10 +50,8 @@ class ProfessionalToneEvaluator:
         if isinstance(raw, str):
             raw = json.loads(raw)
 
-        score = raw["score"]
+        # Return only score + reason — the framework derives result/threshold.
         return {
-            "score": score,
-            "threshold": self._threshold,
-            "result": "pass" if score >= self._threshold else "fail",
+            "score": raw["score"],
             "reason": raw.get("reason", ""),
         }
