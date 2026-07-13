@@ -39,7 +39,6 @@ class AnswerAccuracyEvaluator:
             source=os.path.join(os.path.dirname(__file__), "answer_accuracy.prompty"),
             model={"configuration": prepared},
         )
-        self._threshold = threshold
 
     def __call__(
         self,
@@ -63,10 +62,8 @@ class AnswerAccuracyEvaluator:
 
         if "score" not in raw:
             raise ValueError("evaluator returned no 'score' field")
-        score = raw["score"]
+        # Return only score + reason — the framework derives result/threshold.
         return {
-            "score": score,
-            "threshold": self._threshold,
-            "result": "pass" if score >= self._threshold else "fail",
+            "score": raw["score"],
             "reason": raw.get("reason", ""),
         }

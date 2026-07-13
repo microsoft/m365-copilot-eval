@@ -397,6 +397,9 @@ runevals --log-level error
 runevals --concurrency 5 --prompts-file ./evals/evals.json
 runevals --concurrency 1000 --prompts-file ./evals/evals.json   # Python CLI clamps to 5
 
+# Multi-account sign-in: pick which cached account to use
+runevals --account user@contoso.com --prompts-file ./evals/evals.json
+
 # Custom output location in your project
 runevals --output ./reports/results.html
 ```
@@ -466,7 +469,12 @@ Options:
   -o, --output <file>           output file (JSON, CSV, or HTML)
   -i, --interactive             interactive prompt entry mode
   --m365-agent-id <id>          override agent ID
+  --account <account>           user account (email/UPN) to sign in with when multiple are cached
   --env <environment>           environment name (default: dev)
+  --concurrency <number>        parallel workers for prompt processing (1-5)
+  --azure-ai-auth-mode <mode>   Azure AI auth: key | default-credential
+  --judge-backend <backend>     LLM judge backend: azure (default) | copilot
+  --no-judge-auto-fallback      disable auto-retry with model="auto" on rate limit (copilot)
   --init-only                   just setup, don't run evals
   -h, --help                    display help
 
@@ -474,6 +482,84 @@ Cache Commands:
   cache-info                    show cache statistics
   cache-clear                   remove cached Python runtime
   cache-dir                     print cache directory path
+```
+
+## 🧑‍⚖️ LLM Judge Backend
+
+LLM-based evaluators (Relevance, Coherence, Groundedness, Similarity) are scored
+by a "judge" model. Two backends are available via `--judge-backend`:
+
+| Backend | Flag | Model is configured by | Notes |
+|---------|------|------------------------|-------|
+| **Azure OpenAI** (default) | `--judge-backend azure` | `AZURE_AI_MODEL_NAME` env var | Requires the `AZURE_AI_*` variables. |
+| **GitHub Copilot** | `--judge-backend github-copilot` | `GITHUB_COPILOT_JUDGE_MODEL` env var | No Azure OpenAI keys needed; authenticates with GitHub (`gh auth login` or `GITHUB_TOKEN`). |
+
+```bash
+# Use GitHub Copilot as the judge (no Azure OpenAI configuration required)
+runevals --judge-backend github-copilot --prompts-file ./evals/evals.json
+```
+
+### Choosing the Copilot judge model
+
+There is **no `--judge-model` flag** — the model is read from the
+`GITHUB_COPILOT_JUDGE_MODEL` environment variable, mirroring how the Azure backend reads
+`AZURE_AI_MODEL_NAME`.
+
+```bash
+GITHUB_COPILOT_JUDGE_MODEL="gpt-4.1"   # pin a specific model
+# (unset)                       # defaults to "auto"
+```
+
+- **Default is `"auto"`** — Copilot selects a model per request. The actual model
+  used is reported in the run output (e.g. `Judge: GitHub Copilot (model: auto → resolved: gpt-4.1-mini)`).
+- If you pin a model that your account can't access, the run **fails fast** at
+  startup with the list of available models (instead of erroring on every prompt).
+
+### Rate limits and auto-fallback
+
+By default, if a pinned model hits its rate limit, the judge automatically retries
+that evaluation with `model="auto"` so the run can finish. Pass
+`--no-judge-auto-fallback` to disable this and surface the rate-limit error instead.
+
+### GPT‑5.x and o‑series judge models (Microsoft Foundry cloud evaluation)
+
+GPT‑5.x and o‑series models can't be used with the default local evaluators. To
+use one of these models as the LLM judge, point the CLI at a **Microsoft Foundry
+project** — the LLM evaluators (Relevance, Coherence, Groundedness, Similarity)
+then run through Microsoft Foundry cloud evaluation instead.
+
+This is **automatic** and independent of `--judge-backend`:
+
+- Set `AZURE_AI_PROJECT_ENDPOINT` to your Foundry project endpoint
+  (`https://<account>.services.ai.azure.com/api/projects/<project>`).
+- When `AZURE_AI_PROJECT_ENDPOINT` **and** `AZURE_AI_MODEL_NAME` are set, the LLM
+  evaluators run in Foundry. The results and report format are unchanged.
+- **Leave `AZURE_AI_PROJECT_ENDPOINT` unset to use the local evaluator path** for
+  gpt‑4x models — no other configuration change needed.
+
+| `AZURE_AI_PROJECT_ENDPOINT` set? | Judge models supported |
+|:---:|-----------------|
+| ✅ yes | gpt‑5x / o‑series **and** gpt‑4x (via Microsoft Foundry) |
+| ❌ no | gpt‑4x only (local evaluators) |
+
+> **Note:** Microsoft Foundry has **deprecated the gpt‑4x / gpt‑4o judge models**,
+> with retirement dates through 2026. Plan to move your judge model to gpt‑5.x
+> (which requires the Foundry cloud evaluation path above). See the
+> [Foundry model retirement schedule](https://learn.microsoft.com/azure/foundry/openai/concepts/model-retirement-schedule).
+
+Requirements: a Foundry project with a chat‑capable model deployment, the
+**Azure AI Developer** role on the project, and Entra sign‑in
+(`az login` / `DefaultAzureCredential`). `AZURE_AI_API_KEY` is not used for this
+path. If you're not signed in or lack the required role, the run reports an
+authentication or permission error.
+See [Cloud evaluation with the Microsoft Foundry SDK](https://learn.microsoft.com/azure/foundry/how-to/develop/cloud-evaluation)
+and [RAG evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/rag-evaluators).
+
+```bash
+# Point at a Foundry project to evaluate with a gpt‑5x / o‑series judge model
+AZURE_AI_PROJECT_ENDPOINT="https://myacct.services.ai.azure.com/api/projects/myproj"
+AZURE_AI_MODEL_NAME="gpt-5-mini"
+runevals --prompts-file ./evals/evals.json
 ```
 
 ## ❓ Troubleshooting

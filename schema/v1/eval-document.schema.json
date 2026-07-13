@@ -386,7 +386,7 @@
     },
     "EvaluatorMap": {
       "type": "object",
-      "description": "Map of evaluator names to their configuration options. Built-in evaluator keys (e.g. 'Relevance') have typed option schemas; any other valid identifier is treated as a user-authored custom LLM-judge evaluator (resolved at runtime from <project_root>/custom-evaluators/<name>/) and validated against CustomEvaluatorOptions.",
+      "description": "Map of evaluator names to their configuration options. Built-in evaluator keys (e.g. 'Relevance') have typed option schemas; any other valid identifier is treated as a user-authored custom evaluator (resolved at runtime from <project_root>/custom-evaluators/<name>/) and validated against CustomEvaluatorOptions. A custom evaluator is an LLM-judge when its folder contains <name>.prompty, or a code-only (non-LLM) check when it contains only <name>.py.",
       "propertyNames": {
         "pattern": "^[a-zA-Z][a-zA-Z0-9_]*$"
       },
@@ -405,10 +405,10 @@
     },
     "CustomEvaluatorOptions": {
       "type": "object",
-      "description": "Options for user-authored custom LLM-judge evaluators. The `options` dict is forwarded to the wrapper's __init__ for evaluator-specific configuration.",
+      "description": "Options for user-authored custom evaluators (both LLM-judge and code-only / non-LLM kinds). The `options` dict is forwarded to the wrapper's __init__ for evaluator-specific configuration.",
       "additionalProperties": false,
       "properties": {
-        "threshold": { "type": "number", "minimum": 1, "maximum": 5, "description": "Pass/fail threshold on the 1-5 LLM scale (default: 3)." },
+        "threshold": { "type": "number", "description": "Pass/fail threshold. A result passes when score >= threshold. Set it to match whatever scale your evaluator's score uses. For LLM-judge evaluators keep it on the 1-5 scale by convention (default: 3). For code-only evaluators it defaults to 1, which suits a 0/1 (fail/pass) score encoding; for a fractional score (e.g. a partial-match ratio in [0, 1]) use a fractional threshold such as 0.7." },
         "options":   { "type": "object", "additionalProperties": true, "description": "Evaluator-specific configuration forwarded to the wrapper's __init__ (open schema)." }
       }
     },
