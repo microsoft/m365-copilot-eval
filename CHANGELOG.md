@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.13.0 (2026-07-16)
+
+
+### Features
+
+* **citations:** detect markdown-link citation format ([N](url#suffix))
+
 ## 1.12.0 (2026-07-10)
 
 

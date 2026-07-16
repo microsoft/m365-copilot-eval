@@ -246,7 +246,7 @@
         "count":     { "type": "integer", "minimum": 0, "description": "Number of citations found in the response" },
         "result":    { "type": "string", "enum": ["pass", "fail"], "description": "Pass/fail result based on citation count vs threshold" },
         "threshold": { "type": "integer", "minimum": 0, "description": "Minimum required number of citations for pass" },
-        "format":    { "type": "string", "description": "Citation format detected. Known values: 'oai_unicode', 'bracket', 'mixed'.", "examples": ["oai_unicode", "bracket", "mixed"] },
+        "format":    { "type": "string", "description": "Citation format detected. Known values: 'oai_unicode', 'bracket', 'markdown', 'mixed'.", "examples": ["oai_unicode", "bracket", "markdown", "mixed"] },
         "citations": { "type": "array", "items": { "$ref": "#/$defs/Citation" }, "description": "Parsed citation objects" }
       }
     },
@@ -426,7 +426,7 @@
       "additionalProperties": false,
       "properties": {
         "threshold":       { "type": "integer", "minimum": 1, "description": "Minimum required number of citations (default: 1)." },
-        "citation_format": { "type": "string", "examples": ["oai_unicode", "bracket", "mixed"], "description": "Citation format for detection. Default: oai_unicode." }
+        "citation_format": { "type": "string", "examples": ["oai_unicode", "bracket", "markdown", "mixed"], "description": "Citation format for detection. Default: oai_unicode." }
       }
     },
     "ExactMatchOptions": {

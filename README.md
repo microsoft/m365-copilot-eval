@@ -156,6 +156,15 @@ runevals --azure-ai-auth-mode key
 
 > **Note:** `DefaultAzureCredential` tries multiple credential sources in order: Azure CLI, Azure PowerShell, environment variables, managed identity, and more. See [Azure Identity docs](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential) for details.
 
+**Selecting a tenant:** If your Azure OpenAI resource lives in a tenant other than your credential's default (common for guest accounts or multi‑tenant orgs), set the `AZURE_TENANT_ID` environment variable to the target tenant's ID. `DefaultAzureCredential` honors this variable and signs in against that tenant.
+
+```bash
+# Direct DefaultAzureCredential at a specific tenant
+AZURE_TENANT_ID="<your-tenant-id>"
+```
+
+> **Tip:** For the Azure CLI credential specifically, you can instead sign in to the tenant directly with `az login --tenant <your-tenant-id>`. Setting `AZURE_TENANT_ID` covers the other credential sources (environment, managed identity, etc.) as well.
+
 ### Advanced: Request Timeout & Retries (Optional)
 
 Calls to the Work IQ A2A agent use sensible defaults that work for most workloads. For long-running agents (multi-step reasoning, large tool calls, slow downstream services) you can tune the HTTP request behavior with these optional environment variables:
@@ -552,6 +561,11 @@ Requirements: a Foundry project with a chat‑capable model deployment, the
 (`az login` / `DefaultAzureCredential`). `AZURE_AI_API_KEY` is not used for this
 path. If you're not signed in or lack the required role, the run reports an
 authentication or permission error.
+
+> **Selecting a tenant:** If your Foundry project is in a different tenant than
+> your credential's default, set `AZURE_TENANT_ID` — see
+> [Selecting a tenant](#azure-openai-authentication-mode) above.
+
 See [Cloud evaluation with the Microsoft Foundry SDK](https://learn.microsoft.com/azure/foundry/how-to/develop/cloud-evaluation)
 and [RAG evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/rag-evaluators).
 
@@ -618,6 +632,26 @@ export PYTHON_PATH=/usr/local/bin/python3.13
 ```
 
 Python 3.13.x is the tested version. If a different version is found, you'll be prompted to confirm before proceeding. In CI/CD, a version mismatch fails automatically.
+
+### Capturing Run Output for Troubleshooting
+
+When a run fails and you need to troubleshoot (or hand output to support), the **recommended approach is to redirect the CLI's console output to a file** using your shell's standard redirection. The output redirection works consistently across shells and CI/CD.
+
+Run with `--log-level debug` and capture everything printed to the console into a plain-text log file. Redirect both stdout and stderr so the capture includes the human-readable results **and** the structured diagnostic log lines:
+
+```powershell
+# Windows PowerShell — '*>' redirects all streams (stdout + stderr)
+runevals --log-level debug *> my_run.log
+```
+
+```bash
+# macOS/Linux (bash/zsh) — merge stderr into stdout
+runevals --log-level debug > my_run.log 2>&1
+```
+
+Attach `my_run.log` to your support request. This captures the same output shown on the console, in a single file that is easy to share.
+
+> **⚠️ Review before sharing:** `--log-level debug` may include raw API payloads and response data. Redaction is pattern-based (API keys, tokens, passwords, long mixed-case strings) and **will not catch arbitrary PII or custom credentials** in prompts or responses. Manually review the captured file before sending it to anyone.
 
 ## 📚 Advanced Documentation
 
