@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.14.0 (2026-07-22)
+
+
+### Features
+
+* **a2a:** log request-id/conversation-id/timestamp for every A2A response
+
+
+### Bug Fixes
+
+* **env-loader:** support .env.dev auto-detection and env-file selecti…
+
 ## 1.13.0 (2026-07-16)
 
 
