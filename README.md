@@ -109,8 +109,18 @@ AZURE_AI_API_VERSION="2024-12-01-preview"  # default
 AZURE_AI_MODEL_NAME="gpt-4o-mini"           # recommended
 TENANT_ID="<your-tenant-id>"
 ```
-- If you are storing your environment variables in `.env.dev` or `.env.local` files, you can run `runevals --env dev` or `runevals --env local`
+- If you are storing your environment variables in `.env.local` or `.env.dev`, just run `runevals` — these files are auto-detected (`.env.local` first, then `.env.dev`; each looked up in the current directory, then the `env/` folder). For any other file, pass the selector, e.g. `runevals --env prod` loads `env/.env.prod`.
 - You can also override the agent ID at runtime: `runevals --m365-agent-id "custom-id"`
+
+#### Environment file resolution & precedence
+
+**`--env` omitted (auto-detect):** loads a single base file — `.env.local` if present, otherwise `.env.dev` (each searched in the current directory, then its `env/` folder) — and then applies its paired personal-secrets override last (**`.env.local.user`** for the `.env.local` base, **`.env.dev.user`** for the `.env.dev` base) so personal secrets win. If **both** `.env.local` and `.env.dev` exist, `.env.local` wins and the CLI reminds you to pass `--env dev` to use `.env.dev`. If any other `.env.*` file is present, the CLI hints that you can select it with `--env`. If nothing is found, it continues with system environment variables.
+
+**`--env <name>` given (layered, later wins):**
+
+1. **`.env.local`** — base (searched in the current directory, then its `env/` folder).
+2. **`.env.local.user`** — personal secrets, never checked in.
+3. **`env/.env.<name>`** — the named file, layered on top (falling back to the package env directory). If the named file does not exist the CLI warns and continues with the vars already loaded.
 
 ---
 
@@ -202,8 +212,8 @@ runevals --env dev
 **No prompts file?** If you don't have a prompts file yet, the tool will offer to create a starter file with example prompts for you.
 
 **Environment file lookup:**
-- Checks `.env.local` first (ATK projects)
-- Then checks `env/.env.{name}` if `--env {name}` is specified
+- When `--env` is omitted, auto-detects `.env.local`, then `.env.dev` (current dir, then `env/` folder)
+- With `--env {name}`, loads `env/.env.{name}` layered on the `.env.local` base (warns and continues if the file is missing)
 - Prompts file auto-discovery works the same for all projects
 
 
@@ -381,10 +391,10 @@ Results saved to: ./evals/2025-12-03_14-30-45.html
 **Commands to run from your project root:**
 
 ```bash
-# Use .env.local (checked in current dir, then env/ folder)
+# Auto-detect env file: .env.local first, then .env.dev (current dir, then env/ folder)
 runevals
 
-# Use env/.env.dev configuration
+# Explicitly load env/.env.dev (layered on the .env.local base)
 runevals --env dev
 
 # Use specific prompts file in your project
@@ -479,7 +489,7 @@ Options:
   -i, --interactive             interactive prompt entry mode
   --m365-agent-id <id>          override agent ID
   --account <account>           user account (email/UPN) to sign in with when multiple are cached
-  --env <environment>           environment name (default: dev)
+  --env <environment>           environment name; omit to auto-detect .env.local then .env.dev
   --concurrency <number>        parallel workers for prompt processing (1-5)
   --azure-ai-auth-mode <mode>   Azure AI auth: key | default-credential
   --judge-backend <backend>     LLM judge backend: azure (default) | copilot
