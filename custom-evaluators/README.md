@@ -167,6 +167,19 @@ sample doesn't discard the other good samples. (The legacy
 `{"result": "error", "error": ..., "threshold": ...}` shape is still
 accepted for backward compatibility.)
 
+The CLI also attaches an optional machine-readable `code` to every errored
+entry so callers can categorize the failure (see
+[Per-evaluator error codes](../scorecard-guide.md#per-evaluator-error-codes)).
+You don't set it — the framework classifies the failure automatically:
+an empty agent response is recorded as `emptyAgentResponse` *before* your
+evaluator is invoked, and if your evaluator raises on empty/null input the
+CLI still categorizes it as `emptyAgentResponse`. A malformed return value (not a
+dict, or a missing / non-numeric / out-of-range `score`) is categorized as
+`invalidEvaluatorResult`; a failure to import/resolve your evaluator module is
+`evaluatorLoadError`; a rate-limit or timeout from an LLM-judge call maps to
+`judgeRateLimited` / `judgeTimeout`; an explicit `{"error": ...}` signal and
+anything else maps to `evaluatorError`.
+
 **Score constraints (LLM-judge):**
 - `score` MUST be an integer in `[1, 5]` (same 1-5 scale as built-in LLM
   evaluators). Float values that are mathematically integers (e.g. `4.0`)

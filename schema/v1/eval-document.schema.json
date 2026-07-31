@@ -79,6 +79,7 @@
           "$ref": "#/$defs/ErrorObject",
           "description": "Error details for this item, if any."
         },
+        "tags":              { "type": "array", "items": { "type": "string" }, "description": "Optional tags for grouping/filtering this eval. Echoed verbatim to the results item." },
         "extensions":        { "type": "object", "additionalProperties": true, "description": "Extension point for custom item-level fields" }
       },
       "not": { "required": ["turns"] }
@@ -94,6 +95,7 @@
         "turns":           { "type": "array", "minItems": 1, "maxItems": 20, "items": { "$ref": "#/$defs/Turn" }, "description": "Ordered array of conversation turns" },
         "conversation_id": { "type": "string", "description": "Unique identifier for this conversation thread" },
         "summary":         { "$ref": "#/$defs/ThreadSummary", "description": "Aggregate statistics for the thread" },
+        "tags":            { "type": "array", "items": { "type": "string" }, "description": "Optional tags for grouping/filtering this thread. Echoed verbatim to the results thread." },
         "extensions":      { "type": "object", "additionalProperties": true, "description": "Extension point for custom thread-level fields" }
       },
       "not": { "required": ["prompt"] }
@@ -122,6 +124,7 @@
           "$ref": "#/$defs/ErrorObject",
           "description": "Error details for this turn, if any."
         },
+        "tags":              { "type": "array", "items": { "type": "string" }, "description": "Optional tags for grouping/filtering this turn. Echoed verbatim to the results turn." },
         "extensions":        { "type": "object", "additionalProperties": true, "description": "Extension point for custom turn-level fields" }
       }
     },
@@ -363,6 +366,11 @@
       "additionalProperties": false,
       "properties": {
         "result": { "type": "string", "const": "error", "description": "Always 'error' for this variant." },
+        "code": {
+          "type": "string",
+          "enum": ["emptyAgentResponse", "judgeOutputUnparseable", "judgeAuthenticationError", "judgeRateLimited", "judgeTimeout", "evaluatorConfigurationError", "evaluatorLoadError", "invalidEvaluatorResult", "evaluatorError"],
+          "description": "Optional machine-readable failure category. One of: 'emptyAgentResponse' (agent returned empty/None/whitespace), 'judgeOutputUnparseable' (LLM judge returned empty/non-JSON output), 'judgeAuthenticationError' (authentication to the Azure AI/OpenAI judge backend failed), 'judgeRateLimited' (the LLM judge backend was throttled / rate-limited), 'judgeTimeout' (the LLM judge call or Foundry evaluation timed out), 'evaluatorConfigurationError' (the evaluator was misconfigured for the run, e.g. a custom LLM evaluator with the Copilot SDK judge backend and no Azure OpenAI credentials), 'evaluatorLoadError' (a custom evaluator failed to import/resolve), 'invalidEvaluatorResult' (a custom evaluator returned a malformed result: not a dict, missing/non-numeric/out-of-range score), 'evaluatorError' (any other uncaught evaluator failure)."
+        },
         "error":  { "type": "string", "minLength": 1, "description": "Error message describing why the evaluator did not produce a result." }
       }
     },
@@ -374,8 +382,8 @@
       "properties": {
         "code": {
           "type": "string",
-          "minLength": 1,
-          "description": "Machine-readable error category. One of: 'agentRequestFailed', 'turnSkipped', 'evaluatorsFailed'."
+          "enum": ["agentRequestFailed", "agentAuthenticationError", "agentRateLimited", "agentTimeout", "agentResponseUnparseable", "turnSkipped", "evaluatorsFailed"],
+          "description": "Machine-readable error category. Agent-request failures: 'agentRequestFailed' (generic), 'agentAuthenticationError' (auth/HTTP 401 to the agent), 'agentRateLimited' (agent throttled / HTTP 429), 'agentTimeout' (agent request timed out), 'agentResponseUnparseable' (agent returned a malformed / non-JSON / protocol-invalid response). Other: 'turnSkipped' (a preceding turn failed), 'evaluatorsFailed' (at least one evaluator errored)."
         },
         "message": {
           "type": "string",
