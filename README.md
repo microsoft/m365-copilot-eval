@@ -466,6 +466,8 @@ Results are automatically saved to `./evals/YYYY-MM-DD_HH-MM-SS.html` with:
 - Per-prompt and per-turn evaluation scores from configured evaluators
 - Aggregate statistics across all evaluated items
 - Multi-turn thread summaries (turns passed/failed, overall status)
+- Custom metadata: any `extensions` object on an input item, thread, or turn is echoed **verbatim** onto the corresponding results item/thread/turn in the JSON and CSV outputs (not the HTML report), so harnesses can attribute results back to their own tags (e.g. `"extensions": { "com.microsoft.wiqd.evalCategory": "safety" }`). A document-level `metadata.extensions` object is echoed verbatim onto the results document's `metadata.extensions` (JSON).
+- First-class grouping: an optional `tags` (array of strings) field on an input item, thread, or turn is echoed **verbatim** onto the corresponding results item/thread/turn (JSON, CSV, and HTML).
 
 Other formats:
 ```bash

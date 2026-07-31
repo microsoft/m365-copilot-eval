@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.15.0 (2026-07-29)
+
+
+### Features
+
+* add categorized error codes for evaluator and agent failures
+* echo tags and extensions metadata verbatim into evaluation outputs
+
+
+### Bug Fixes
+
+* include judge_prompts.json file in published npm package
+
 ## 1.14.0 (2026-07-22)
 
 
