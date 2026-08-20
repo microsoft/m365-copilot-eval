@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.16.0 (2026-08-20)
+
+
+### Features
+
+* add evaluate-only mode for captured responses
+
+
+### Bug Fixes
+
+* **citations:** display markdown citation [n] label instead of #suffi…
+
 ## 1.15.0 (2026-07-29)
 
 
