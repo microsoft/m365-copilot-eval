@@ -400,6 +400,9 @@ runevals --env dev
 # Use specific prompts file in your project
 runevals --prompts-file ./evals/my-tests.json
 
+# Score responses already captured in a v1 eval document without calling the agent
+runevals --evaluate-only ./evals/captured-responses.json
+
 # Inline prompts (no file needed, useful for quick tests)
 runevals --prompts "What is Microsoft Graph?" --expected "Gateway to M365 data"
 
@@ -487,6 +490,7 @@ Options:
   --prompts <prompts...>        inline prompts to evaluate
   --expected <responses...>     expected responses (with --prompts)
   --prompts-file <file>         JSON file with prompts
+  --evaluate-only <file>        score captured responses from a v1 eval document
   -o, --output <file>           output file (JSON, CSV, or HTML)
   -i, --interactive             interactive prompt entry mode
   --m365-agent-id <id>          override agent ID
@@ -504,6 +508,11 @@ Cache Commands:
   cache-clear                   remove cached Python runtime
   cache-dir                     print cache directory path
 ```
+
+`--evaluate-only` is mutually exclusive with `--prompts`, `--prompts-file`,
+and `--interactive`. Every single-turn item and multi-turn turn must contain a
+`response`. Judge configuration is still required, but WorkIQ/A2A configuration
+and agent authentication are not used.
 
 ## 🧑‍⚖️ LLM Judge Backend
 
