@@ -5,6 +5,21 @@ All notable changes to the eval document schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 1.10.0 (2026-08-18)
+
+
+### Features
+
+* add evaluate-only mode for captured responses
+
+## 1.9.0 (2026-07-29)
+
+
+### Features
+
+* add categorized error codes for evaluator and agent failures
+* echo tags and extensions metadata verbatim into evaluation outputs
+
 ## 1.8.0 (2026-07-20)
 
 
