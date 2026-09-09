@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.10.0",
+  "items": [
+    {
+      "prompt": "What is Microsoft Graph?",
+      "expected_response": "Microsoft Graph is a REST API and developer platform that provides access to Microsoft 365 data and insights across services like Outlook, Teams, and OneDrive."
+    },
+    {
+      "prompt": "What does the /me endpoint represent in Microsoft Graph?",
+      "expected_response": "The /me endpoint represents the signed-in user's profile and related resources."
+    },
+    {
+      "prompt": "How do you list a user's calendar events with Microsoft Graph?",
+      "expected_response": "Use GET /me/events (or /users/{id}/events) with appropriate permissions such as Calendars.Read."
+    },
+    {
+      "prompt": "What is a tenant ID in Microsoft Entra ID (Azure AD)?",
+      "expected_response": "A tenant ID is a GUID that uniquely identifies an organization's Microsoft Entra ID (Azure AD) directory."
+    },
+    {
+      "prompt": "Do I need a license to use Microsoft Graph APIs?",
+      "expected_response": "Access requires appropriate licensing and permissions. Some APIs are restricted or require admin consent."
+    }
+  ]
+}

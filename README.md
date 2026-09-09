@@ -335,7 +335,7 @@ Use `default_evaluators` to set file-level defaults, and per-item `evaluators` w
 | `"replace"` | Per-item evaluators **replace** defaults entirely. Only per-item evaluators run. |
 | _(none)_ | Inherits file-level `default_evaluators`, or system defaults (Relevance, Coherence) if not set. |
 
-See `schema/v1/examples/` in the package for more examples including per-turn evaluator overrides, mixed single/multi-turn files, and output format.
+See the [schema examples guide](schema/v1/examples/README.md) for runnable scenarios, per-turn evaluator overrides, mixed single/multi-turn files, output formats, and negative validation fixtures.
 
 ### Custom Evaluators (New in Schema v1.6.0)
 
@@ -400,6 +400,9 @@ runevals --env dev
 # Use specific prompts file in your project
 runevals --prompts-file ./evals/my-tests.json
 
+# Score responses already captured in a v1 eval document without calling the agent
+runevals --evaluate-only ./evals/captured-responses.json
+
 # Inline prompts (no file needed, useful for quick tests)
 runevals --prompts "What is Microsoft Graph?" --expected "Gateway to M365 data"
 
@@ -411,6 +414,10 @@ runevals --log-level debug
 runevals --log-level info
 runevals --log-level warning
 runevals --log-level error
+
+# Disable INFO/DEBUG console truncation or change its default 250-character limit
+RUNEVALS_LOG_TRUNCATE=false runevals --log-level info
+RUNEVALS_LOG_MAX_LENGTH=1000 runevals --log-level debug
 
 # Parallel prompt execution control
 runevals --concurrency 5 --prompts-file ./evals/evals.json
@@ -430,6 +437,8 @@ runevals --output ./reports/results.html
 > **⚠️ Debug log safety notice:** The `--log-level debug` option is opt-in and may include raw API payloads and response data in console output. Redaction is pattern-based (API keys, tokens, passwords, long mixed-case strings) and **will not catch arbitrary PII or custom credentials** embedded in prompts or responses. Do not share debug-level output publicly without manual review.
 
 > **Auth and SDK errors:** Warnings and errors from the Microsoft sign-in flow (MSAL) and Azure AI Evaluation SDK appear alongside the CLI's own diagnostics — useful when a run fails to authenticate or an evaluator can't reach Azure. Routine SDK chatter (token cache hits, HTTP retries) is hidden by default. If you're troubleshooting an auth or evaluator issue and want to see everything those libraries report, add `--log-level debug`.
+
+`RUNEVALS_LOG_TRUNCATE` accepts `true`/`false`, `1`/`0`, `yes`/`no`, or `on`/`off`. `RUNEVALS_LOG_MAX_LENGTH` must be a positive integer. These settings apply only to `INFO` and `DEBUG`; `WARNING` and `ERROR` messages are always printed in full. JSON output and generated reports retain the complete message.
 
 ### Optional: Add Shortcuts to package.json
 
@@ -487,6 +496,7 @@ Options:
   --prompts <prompts...>        inline prompts to evaluate
   --expected <responses...>     expected responses (with --prompts)
   --prompts-file <file>         JSON file with prompts
+  --evaluate-only <file>        score captured responses from a v1 eval document
   -o, --output <file>           output file (JSON, CSV, or HTML)
   -i, --interactive             interactive prompt entry mode
   --m365-agent-id <id>          override agent ID
@@ -504,6 +514,11 @@ Cache Commands:
   cache-clear                   remove cached Python runtime
   cache-dir                     print cache directory path
 ```
+
+`--evaluate-only` is mutually exclusive with `--prompts`, `--prompts-file`,
+and `--interactive`. Every single-turn item and multi-turn turn must contain a
+`response`. Judge configuration is still required, but WorkIQ/A2A configuration
+and agent authentication are not used.
 
 ## 🧑‍⚖️ LLM Judge Backend
 
@@ -644,6 +659,14 @@ export PYTHON_PATH=/usr/local/bin/python3.13
 ```
 
 Python 3.13.x is the tested version. If a different version is found, you'll be prompted to confirm before proceeding. In CI/CD, a version mismatch fails automatically.
+
+### CI Exit Behavior
+
+A full WorkIQ evaluation exits with code `1` when none of its requested
+single-turn items or multi-turn turns receive a non-empty agent response.
+Configured output artifacts are written before the process exits. A mixed run
+with at least one non-empty response still exits successfully; evaluator score
+failures and evaluate-only runs do not trigger this job-level failure.
 
 ### Capturing Run Output for Troubleshooting
 
