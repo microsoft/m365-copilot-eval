@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.17.0 (2026-09-08)
+
+
+### Features
+
+* **a2a:** upgrade A2A client to protocol 1.0
+
+
+### Bug Fixes
+
+* **cli:** fail runs with zero agent responses
+* **cli:** identify unsupported schema fields
+* **cli:** make console log truncation configurable
+* **evaluators:** clarify retrieval query pass reason
+* **evaluators:** surface exclusion terms in retrieval query pass reason
+* **progress:** parse pip stdout across chunk boundaries
+* **report:** improve HTML result readability
+
+## 1.16.0 (2026-08-20)
+
+
+### Features
+
+* add evaluate-only mode for captured responses
+
+
+### Bug Fixes
+
+* **citations:** display markdown citation [n] label instead of #suffi…
+
 ## 1.15.0 (2026-07-29)
 
 

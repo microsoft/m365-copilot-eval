@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.10.0",
+  "items": [
+    {
+      "prompt": "What is a Partner Success Forum?",
+      "expected_response": "A Partner Success Forum is a structured channel where partner teams raise blockers, ask questions, and coordinate support with the platform team."
+    },
+    {
+      "prompt": "Are any blocking partner issues assigned to me?",
+      "expected_response": "Check the authoritative work tracker for active blocking issues assigned to the signed-in user, and report only the current results."
+    },
+    {
+      "prompt": "How can I get a scenario or design consultation?",
+      "expected_response": "Use the approved consultation intake process and provide the scenario, requirements, constraints, and desired timeline."
+    },
+    {
+      "prompt": "Where can I ask general platform questions or find the right team?",
+      "expected_response": "Use the approved support directory, documentation, or technical community to find the appropriate team and existing answers."
+    }
+  ]
+}

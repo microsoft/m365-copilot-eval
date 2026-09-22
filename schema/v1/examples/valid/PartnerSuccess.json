@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.10.0",
+  "items": [
+    {
+      "prompt": "How should I report a production incident affecting customers?",
+      "expected_response": "Use your organization's approved incident-management process, include the customer impact and observed symptoms, and engage the appropriate on-call team."
+    },
+    {
+      "prompt": "What should I include when escalating a platform blocker?",
+      "expected_response": "Include the business impact, severity, affected scenarios, reproduction steps, diagnostics, current owner, and any existing tracking or incident ID."
+    },
+    {
+      "prompt": "Where should I ask a general technical question about the platform?",
+      "expected_response": "Use the approved support channel or technical community for the platform, and search existing documentation and answered questions first."
+    },
+    {
+      "prompt": "How can I request a scenario or architecture consultation?",
+      "expected_response": "Use the organization's official consultation intake process and provide the scenario, requirements, constraints, and desired timeline."
+    },
+    {
+      "prompt": "How should I submit a feature request?",
+      "expected_response": "Submit it through the official product feedback channel with the customer problem, business impact, desired outcome, and supporting evidence."
+    },
+    {
+      "prompt": "How should I prepare for a partner feedback session?",
+      "expected_response": "Bring concrete examples, measurable impact, supporting data, and prioritized requests. Distinguish urgent blockers from longer-term improvements."
+    },
+    {
+      "prompt": "How can I check the status of my support requests?",
+      "expected_response": "Use the authoritative request tracker or support portal and filter by requester, owning team, or tracking ID rather than relying on remembered status."
+    },
+    {
+      "prompt": "How should I escalate an unresolved blocker?",
+      "expected_response": "Update the existing support request with current impact and evidence, then follow the documented escalation path without creating duplicate requests."
+    },
+    {
+      "prompt": "How can I contact the partner success team?",
+      "expected_response": "Use the approved support directory or service portal to find the current contact channel for the relevant product area."
+    },
+    {
+      "prompt": "I have a live-site issue. What should I do first?",
+      "expected_response": "Start the approved incident process immediately, capture impact and diagnostics, and engage the responsible on-call team."
+    }
+  ]
+}

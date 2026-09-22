@@ -382,8 +382,8 @@
       "properties": {
         "code": {
           "type": "string",
-          "enum": ["agentRequestFailed", "agentAuthenticationError", "agentRateLimited", "agentTimeout", "agentResponseUnparseable", "turnSkipped", "evaluatorsFailed"],
-          "description": "Machine-readable error category. Agent-request failures: 'agentRequestFailed' (generic), 'agentAuthenticationError' (auth/HTTP 401 to the agent), 'agentRateLimited' (agent throttled / HTTP 429), 'agentTimeout' (agent request timed out), 'agentResponseUnparseable' (agent returned a malformed / non-JSON / protocol-invalid response). Other: 'turnSkipped' (a preceding turn failed), 'evaluatorsFailed' (at least one evaluator errored)."
+          "enum": ["agentRequestFailed", "agentAuthenticationError", "agentRateLimited", "agentTimeout", "agentResponseUnparseable", "turnSkipped", "evaluatorsFailed", "evaluationCrashed"],
+          "description": "Machine-readable error category. Agent-request failures: 'agentRequestFailed' (generic), 'agentAuthenticationError' (auth/HTTP 401 to the agent), 'agentRateLimited' (agent throttled / HTTP 429), 'agentTimeout' (agent request timed out), 'agentResponseUnparseable' (agent returned a malformed / non-JSON / protocol-invalid response). Other: 'turnSkipped' (a preceding turn failed), 'evaluatorsFailed' (at least one evaluator errored), 'evaluationCrashed' (evaluation of this item crashed before any result could be produced; currently emitted by the --evaluate-only pipeline)."
         },
         "message": {
           "type": "string",
