@@ -1,12 +1,17 @@
 {
-  "prompts": [
-    "What is Microsoft Graph?",
-    "How do I authenticate with Microsoft Graph?",
-    "What are the main capabilities of Microsoft Copilot?"
-  ],
-  "expected_responses": [
-    "Microsoft Graph is a gateway to data and intelligence in Microsoft 365.",
-    "You can authenticate with Microsoft Graph using various methods including OAuth 2.0, client credentials flow, or delegated permissions.",
-    "Microsoft Copilot provides AI-powered assistance for productivity tasks, content generation, data analysis, and workflow automation across Microsoft 365 applications."
+  "schemaVersion": "1.6.0",
+  "items": [
+    {
+      "prompt": "What is Microsoft Graph?",
+      "expected_response": "Microsoft Graph is a gateway to data and intelligence in Microsoft 365."
+    },
+    {
+      "prompt": "How do I authenticate with Microsoft Graph?",
+      "expected_response": "You can authenticate with Microsoft Graph using various methods including OAuth 2.0, client credentials flow, or delegated permissions."
+    },
+    {
+      "prompt": "What are the main capabilities of Microsoft Copilot?",
+      "expected_response": "Microsoft Copilot provides AI-powered assistance for productivity tasks, content generation, data analysis, and workflow automation across Microsoft 365 applications."
+    }
   ]
 }
