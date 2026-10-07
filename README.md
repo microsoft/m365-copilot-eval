@@ -13,6 +13,8 @@ A CLI for evaluating M365 Copilot agents. Send prompts to your agent, get respon
 | Citations | Count-based | ≥ 0 | No | Counts the number of citation references. |
 | RetrievalQuery | Non-LLM | pass/fail | No | Assesses if Copilot correctly translated user intent into retrieval queries.|
 | RetrievalResult | Non-LLM | pass/fail | No | Validates that expected resources actually appear in the documents, messages, and items returned by retrieval executions.|
+| ToolCallSelection | Non-LLM | pass/fail/error | No | Validates which plugin functions WorkIQ selected using Developer Info telemetry. Unavailable evidence produces an errored score with a tool-specific code.|
+| ToolCallExecution | Non-LLM | pass/fail/error | No | Validates that successful matching HTTP 2xx executions meet the expected call multiplicity. Additional attempts are allowed; indeterminate evidence produces an errored score.|
 | ExactMatch | String match | boolean | No | Measures the degree of textual overlap between the agent's response and the expected_response. |
 | PartialMatch | String match | 0.0–1.0 | No | Performs a direct string comparison between the agent's response and the expected_response. |
 - Multiple input modes: command‑line list, JSON file, interactive.
@@ -337,6 +339,104 @@ Use `default_evaluators` to set file-level defaults, and per-item `evaluators` w
 
 See the [schema examples guide](schema/v1/examples/README.md) for runnable scenarios, per-turn evaluator overrides, mixed single/multi-turn files, output formats, and negative validation fixtures.
 
+### Tool-Call Allowlist (New in Schema v1.11.0)
+
+Some agents pause mid-turn to ask permission before calling a tool. `runevals` answers that prompt from an allowlist you declare in the eval document, so an unattended run stays reproducible.
+
+> **⚠️ The allowlist is not a list of the tools your agent is able to call, and not a record of the tools it did call.**
+> It decides only how `runevals` answers a confirmation prompt. A tool that does not pause is never checked against your list and runs regardless of whether you named it. Whether a tool pauses is decided by the platform and the agent's developer, not by this file — so a prompt can complete having called tools you deliberately left out. Treat the allowlist as a control for **unattended reproducibility**, never as a security boundary or an audit trail.
+
+```json
+{
+  "schemaVersion": "1.11.0",
+  "default_allowed_tools": ["github_orgs_get"],
+  "items": [
+    {
+      "prompt": "Summarize the MIT license",
+      "allowed_tools": ["learnmicro_microsoft_docs_search"],
+      "allowed_tools_mode": "replace"
+    }
+  ]
+}
+```
+
+| Mode | Behavior |
+|------|----------|
+| `"extend"` (default) | Per-item `allowed_tools` **merge** with `default_allowed_tools`. |
+| `"replace"` | Per-item `allowed_tools` **replace** the file-level defaults entirely. Combine with `[]` to forbid all tool use for one prompt. |
+| _(none)_ | Inherits `default_allowed_tools`. |
+
+Key points:
+
+- **There is no system default.** Unlike evaluators, an unconfigured document allows *nothing*: any tool the agent asks for is refused and the prompt fails with the `toolCallNotAllowed` error code. Nothing is executed, so this is distinct from a platform-side failure.
+- **Identifiers are matched whole**, exactly, after trimming. They take the form `namespace_toolname` — for example `learnmicro_microsoft_docs_search` is namespace `learnmicro` plus tool `microsoft_docs_search`. Copy the identifier verbatim from the agent's confirmation prompt; do not try to split it.
+- In multi-turn threads the allowlist resolves **per turn**: a turn without an override inherits the file-level default, not the previous turn's list.
+- **The allowlist gates the confirmation prompt, not the tool itself.** It can only refuse a call the agent *stops to ask about*. A call that never pauses runs unchecked — no refusal is logged, the run exits successfully, and nothing in the output marks it. `runevals` warns at the start of any run whose document configures an allowlist, restating this; it is a reminder, not a sign that anything went wrong.
+- **Whether a call pauses depends on the agent's declaration and on what was already consented.** Functions declared together in one action may be consented as a group, so approving one silently authorizes its siblings. A function may be declared to prompt on *every* call; one left at the default prompts only until it is consented if it merely retrieves data, but on every call otherwise. Consent then persists — across later prompts and later runs, including runs whose document does not list the tool. The declaration-level levers are [documented by Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/plugin-confirmation-prompts): `x-openai-isConsequential` on an API plugin's OpenAPI operation, `readOnlyHint` on an MCP tool's annotations.
+- **A turn may collect only one tool consent.** `runevals` answers a single confirmation per turn. If a turn pauses a **second** time, the turn fails with `agentRequestFailed`, naming the tool it was asking for. Answering more than one consent per turn is not supported pending platform work. The limit is per turn, not per run: a **multi-turn** evaluation in which each turn consents to one tool is handled normally, so splitting the work across turns avoids the problem.
+- **Sign-in prompts are not supported.** If a task pauses to authenticate with a downstream service (`auth-required`), `runevals` fails the prompt with `agentAuthenticationError`. The CLI cannot complete an interactive sign-in. Authorize the connection once in Microsoft 365 Copilot chat, then re-run the evaluation — the grant persists, so the pause does not recur.
+- Answering a pause requires A2A 1.0, whose message parts can carry the confirmation payload. Runs pinned to the legacy `0.3` protocol (via `WORKIQ_A2A_PROTOCOL_VERSION=0.3`) cannot approve tool calls.
+
+#### Finding your agent's tool identifiers
+
+`runevals --list-tools <agent-id>` prints both identity forms an agent declares:
+
+- `namespace_function` for `allowed_tools`;
+- `plugin_name` and `function_name` for `ToolCallSelection` and `ToolCallExecution`.
+
+These identities serve different purposes and are not interchangeable:
+
+| Purpose | Fields | Example |
+|---|---|---|
+| Approve a confirmation-gated call | One opaque `allowed_tools` string | `learnpinned_microsoft_docs_search` |
+| Evaluate tool selection or execution | Structured `plugin_name` and `function_name` | `Microsoft Learn Docs` / `microsoft_docs_search` |
+
+The evaluator `plugin_name` comes from the plugin's human name
+(`name_for_human`), not its namespace. Do not derive it by splitting or
+rewriting the `allowed_tools` identifier; copy each value from the matching
+section of the command output.
+
+This lets you author allowlists and tool-call evaluator expectations without first provoking a refusal or running a Developer Info capture:
+
+```bash
+runevals --list-tools T_f25e0c51-5271-5cb7-6a01-3f28b329c05e
+```
+
+```
+Tool identities declared by "pinned2mcpdev"
+
+For allowed_tools:
+  learnpinned_microsoft_docs_search
+  learnpinned_microsoft_code_sample_search
+  learnpinned_microsoft_docs_fetch
+
+For ToolCallSelection or ToolCallExecution (plugin_name / function_name):
+  Microsoft Learn Docs / microsoft_docs_search
+  Microsoft Learn Docs / microsoft_code_sample_search
+  Microsoft Learn Docs / microsoft_docs_fetch
+
+The two sections use different identity systems; do not substitute one for the other.
+Nothing is approved until you add an identifier to your evaluation document.
+```
+
+Copy the identities you need into your evaluation document. Nothing is approved until you add an `allowed_tools` identifier — this command only reports metadata and never edits your document or affects a run.
+
+Requirements and limits:
+
+- **Requires `atk` (Microsoft 365 Agents Toolkit CLI).** The agent manifest lives behind an API that `runevals` cannot call for you, and reading it needs an interactive sign-in — which is why this is a separate step rather than something a run does. **Expect a sign-in prompt the first time**; `atk` handles that itself, so there is nothing to set up beforehand. If it ever gets stuck, `atk auth login m365` signs you in directly.
+- **The toolkit's sign-in is separate from the one your runs use.** `atk` keeps a single Microsoft 365 account for the whole machine, shared with every other toolkit project, while `runevals` authenticates on its own. So discovery can fail on an account mismatch even though your evaluation runs fine. When that happens it names the account in use and offers to hand over to `atk`'s account picker. Switching affects your other toolkit projects, which is why it is never done without asking.
+- **`atk` is spawned, not bundled.** It is not a dependency of this package. An `atk` already on your PATH is used as-is; otherwise it falls back to `npx --yes @microsoft/m365agentstoolkit-cli`, which takes about a minute the first time and is cached afterwards. If neither is available it says so and points you at the refusal path below.
+- **Not every agent declares its tools.** An MCP action set to dynamic discovery resolves its tool list at call time, so there is nothing to read ahead of time. Those actions are reported by namespace as unavailable rather than quietly skipped, so a partial list never looks complete:
+
+  ```
+  ⚠️  This list is incomplete.
+
+  learndocs: tool names unavailable - the MCP server resolves its tools at call time (dynamic discovery).
+  ```
+
+- **The refusal path always works and needs no tooling.** Run the evaluation with the tool left out of `allowed_tools`: the failure names the exact identifier the agent asked for, which you can paste straight into the list. This is a good way to pick up any identifier you don't already know, including tools an MCP server resolves at call time.
+
+
 ### Custom Evaluators (New in Schema v1.6.0)
 
 In addition to the 10 built-in evaluators, you can define your own **custom LLM-judge evaluators** for domain-specific scoring (regulatory compliance, brand tone, custom relevance rubrics, etc.). Drop a `.prompty` file and a `.py` wrapper into `<your_project>/custom-evaluators/<name>/` and reference it from any eval document:
@@ -518,7 +618,13 @@ Cache Commands:
 `--evaluate-only` is mutually exclusive with `--prompts`, `--prompts-file`,
 and `--interactive`. Every single-turn item and multi-turn turn must contain a
 `response`. Judge configuration is still required, but WorkIQ/A2A configuration
-and agent authentication are not used.
+and agent authentication are not used. Tool-call evaluators can reproduce live
+results when the captured document contains the sanitized
+`diagnostics.tool_calls` evidence emitted by a prior run. This evidence contains
+only plugin names, function names, and HTTP response statuses.
+Setting `EVALS_SUPPRESS_DIAGNOSTICS=true` omits this evidence, so a later
+evaluate-only run cannot reproduce tool-call verdicts and reports indeterminate
+tool evidence instead.
 
 ## 🧑‍⚖️ LLM Judge Backend
 

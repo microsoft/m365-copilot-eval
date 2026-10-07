@@ -48,13 +48,6 @@
           "reason": "Response is grounded in the provided context.",
           "evaluator": "azure-ai-groundedness"
         },
-        "toolCallAccuracy": {
-          "score": 5.0,
-          "result": "pass",
-          "threshold": 3,
-          "reason": "Tool calls are accurate and well-formed.",
-          "evaluator": "azure-ai-tool-accuracy"
-        },
         "citations": {
           "count": 2,
           "result": "pass",
@@ -110,6 +103,71 @@
           "result": "pass",
           "threshold": 0.5,
           "reason": "Match score: 1.000"
+        }
+      }
+    },
+    {
+      "prompt": "What is the weather forecast for Seattle?",
+      "expected_response": "The forecast should include Seattle's current conditions.",
+      "evaluators": {
+        "ToolCallSelection": {
+          "calls": [
+            {
+              "id": "weather-selection",
+              "tool": {
+                "plugin_name": "Contoso Weather",
+                "function_name": "get_forecast"
+              }
+            }
+          ],
+          "allow_additional_calls": false
+        },
+        "ToolCallExecution": {
+          "calls": [
+            {
+              "id": "weather-execution",
+              "tool": {
+                "plugin_name": "Contoso Weather",
+                "function_name": "get_forecast"
+              }
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace",
+      "allowed_tools": ["contoso_weather_get_forecast"],
+      "allowed_tools_mode": "replace",
+      "response": "The current conditions in Seattle are mild and cloudy.",
+      "scores": {
+        "toolCallSelection": {
+          "score": 1.0,
+          "result": "pass",
+          "threshold": 1.0,
+          "reason": "All expected tool functions were selected."
+        },
+        "toolCallExecution": {
+          "score": 1.0,
+          "result": "pass",
+          "threshold": 1.0,
+          "reason": "All expected tool functions returned an HTTP 2xx status."
+        }
+      },
+      "status": "pass",
+      "diagnostics": {
+        "tool_calls": {
+          "selected_functions": [
+            {
+              "plugin_name": "Contoso Weather",
+              "function_name": "get_forecast"
+            }
+          ],
+          "executions": [
+            {
+              "plugin_name": "Contoso Weather",
+              "function_name": "get_forecast",
+              "response_status": 200
+            }
+          ]
         }
       }
     }
