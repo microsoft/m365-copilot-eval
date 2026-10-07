@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.11.0",
+  "default_allowed_tools": ["github_orgs_get"],
+  "items": [
+    {
+      "prompt": "Which GitHub orgs am I a member of?",
+      "expected_response": "You belong to the microsoft org."
+    },
+    {
+      "prompt": "Summarize the MIT license.",
+      "expected_response": "The MIT license is permissive.",
+      "allowed_tools": ["learnmicro_microsoft_docs_search"],
+      "allowed_tools_mode": "extend"
+    },
+    {
+      "prompt": "Answer from your own knowledge only.",
+      "expected_response": "No tools were used.",
+      "allowed_tools": [],
+      "allowed_tools_mode": "replace"
+    },
+    {
+      "name": "Allowlist across a thread",
+      "turns": [
+        {
+          "prompt": "Search the docs for Adaptive Cards.",
+          "expected_response": "Here is what the docs say.",
+          "allowed_tools": ["learnmicro_microsoft_docs_search"],
+          "allowed_tools_mode": "replace"
+        },
+        {
+          "prompt": "Now list my orgs.",
+          "expected_response": "You belong to the microsoft org."
+        }
+      ]
+    }
+  ]
+}

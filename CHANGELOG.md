@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.18.0 (2026-10-06)
+
+
+### Features
+
+* **a2a:** handle input-required pauses with a tool-call allowlist
+* add tool call selection and tool call execution evaluators
+* **release:** publish config-baked tgz tarball to public GitHub Releases
+* Support Retrieval Result evaluator with github-copilot judge ba…
+
+
+### Bug Fixes
+
+* **evaluation:** surface actionable Foundry auth failures
+
 ## 1.17.0 (2026-09-08)
 
 
