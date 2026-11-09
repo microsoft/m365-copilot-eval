@@ -4,7 +4,7 @@ This is the canonical example of a **non-LLM** custom evaluator: a folder with
 only ``forbidden_terms.py`` (no ``.prompty``). Because there is no prompty, the
 CLI classifies it as code-only and:
 
-* instantiates it WITHOUT ``model_config`` (so a run that uses only code-only
+* instantiates it WITHOUT ``judge`` (so a run that uses only code-only
   evaluators needs no Azure OpenAI configuration), and
 * lets it return any-numeric ``score`` (no 1-5 clamp).
 
@@ -38,7 +38,7 @@ _FAIL_SCORE = 0
 class ForbiddenTermsEvaluator:
     """Fail a response if it contains any configured forbidden term.
 
-    Code-only: no ``model_config`` is accepted or used.
+    Code-only: no ``judge`` is accepted or used.
     """
 
     def __init__(

@@ -641,6 +641,22 @@ by a "judge" model. Two backends are available via `--judge-backend`:
 runevals --judge-backend github-copilot --prompts-file ./evals/evals.json
 ```
 
+`--azure-ai-auth-mode` applies only to the Azure judge and is ignored when
+`--judge-backend github-copilot` is selected. Live agent runs still require
+WorkIQ authentication; `--evaluate-only` does not.
+
+**Prompty generation settings:** The Copilot judge ignores `model.parameters`,
+including `temperature`, `max_tokens`, and `response_format`. Evaluation continues
+with a warning once per Prompty file; these settings are not forwarded to Copilot.
+Use the Azure judge when they must be applied. See
+[Copilot Prompty parameter limitations](custom-evaluators/README.md#copilot-prompty-parameter-limitations)
+for details, including the lack of enforced JSON output.
+
+**Prompty conversation roles:** Copilot flattens few-shot and multi-turn messages
+into system/user text and warns once per Prompty file. Role labels do not preserve
+the original conversation semantics. Use Azure when exact message roles are
+required; see [conversation-role limitations](custom-evaluators/README.md#copilot-conversation-role-limitations).
+
 ### Choosing the Copilot judge model
 
 There is **no `--judge-model` flag** — the model is read from the
@@ -659,9 +675,12 @@ GITHUB_COPILOT_JUDGE_MODEL="gpt-4.1"   # pin a specific model
 
 ### Rate limits and auto-fallback
 
-By default, if a pinned model hits its rate limit, the judge automatically retries
-that evaluation with `model="auto"` so the run can finish. Pass
+By default, if a pinned model hits its rate limit, the judge retries that request
+once with `model="auto"` and uses `auto` for subsequent calls. Pass
 `--no-judge-auto-fallback` to disable this and surface the rate-limit error instead.
+
+If the fallback returns non-empty text but no valid built-in score, that
+evaluation reports `judgeOutputUnparseable`.
 
 ### GPT‑5.x and o‑series judge models (Microsoft Foundry cloud evaluation)
 
@@ -670,7 +689,7 @@ use one of these models as the LLM judge, point the CLI at a **Microsoft Foundry
 project** — the LLM evaluators (Relevance, Coherence, Groundedness, Similarity)
 then run through Microsoft Foundry cloud evaluation instead.
 
-This is **automatic** and independent of `--judge-backend`:
+This is **automatic** when using `--judge-backend azure` (the default):
 
 - Set `AZURE_AI_PROJECT_ENDPOINT` to your Foundry project endpoint
   (`https://<account>.services.ai.azure.com/api/projects/<project>`).
@@ -694,6 +713,14 @@ Requirements: a Foundry project with a chat‑capable model deployment, the
 (`az login` / `DefaultAzureCredential`). `AZURE_AI_API_KEY` is not used for this
 path. If you're not signed in or lack the required role, the run reports an
 authentication or permission error.
+
+Foundry cloud evaluation scores only Relevance, Coherence, Groundedness, and
+Similarity. Custom Prompty evaluators and `retrievalExtract_contains` assertions
+still require a direct Azure OpenAI connection (`AZURE_AI_OPENAI_ENDPOINT`,
+`AZURE_AI_API_VERSION`, and `AZURE_AI_MODEL_NAME`) or
+`--judge-backend github-copilot`. With Azure selected, missing direct connection
+settings produce an `evaluatorConfigurationError` when a Prompty call is needed;
+Foundry built-ins and deterministic checks can still complete.
 
 > **Selecting a tenant:** If your Foundry project is in a different tenant than
 > your credential's default, set `AZURE_TENANT_ID` — see

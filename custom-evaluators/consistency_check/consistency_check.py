@@ -20,6 +20,11 @@ Example reference from an eval document:
         "options": { "samples": 5 }
       }
     }
+
+Uses the portable ``judge`` contract (spec FR-016C): the CLI injects a
+provider-neutral :class:`~judge_client.JudgeClient` — Azure OpenAI or GitHub
+Copilot, whichever ``--judge-backend`` selects — instead of Azure model
+configuration, so this evaluator runs unchanged on either judge.
 """
 
 from __future__ import annotations
@@ -27,32 +32,24 @@ from __future__ import annotations
 import json
 import os
 import statistics
+from pathlib import Path
 from typing import Any, Dict, List, Optional
-
-from promptflow.client import load_flow
 
 
 _DEFAULT_SAMPLES = 3
 _MAX_SAMPLES = 20
+_PROMPTY_PATH = Path(__file__).parent / "consistency_check.prompty"
 
 
 class ConsistencyCheckEvaluator:
     def __init__(
         self,
         *,
-        model_config: Any,
+        judge: Any,
         threshold: float,
         options: Optional[Dict[str, Any]] = None,
     ) -> None:
-        prepared = dict(model_config)
-        prepared.setdefault(
-            "type",
-            "azure_openai" if "azure_endpoint" in prepared else "openai",
-        )
-        self._flow = load_flow(
-            source=os.path.join(os.path.dirname(__file__), "consistency_check.prompty"),
-            model={"configuration": prepared},
-        )
+        self._judge = judge
         # Clamp to [1, _MAX_SAMPLES]: each sample is one LLM call, so cap the
         # blast radius of a copied-and-edited "samples" value.
         self._samples = min(
@@ -73,9 +70,12 @@ class ConsistencyCheckEvaluator:
         # Per-sample try/except so one bad LLM reply doesn't waste the rest.
         for i in range(self._samples):
             try:
-                # NOTE: forward as `user_prompt`, not `prompt` — `prompt` is
-                # reserved inside promptflow.Prompty.__call__.
-                raw = self._flow(user_prompt=prompt, response=response)
+                # NOTE: forward as `user_prompt`, not `prompt` — `prompt` is a
+                # reserved input name inside promptflow's Prompty rendering.
+                raw = self._judge.invoke_prompty(
+                    prompty_path=_PROMPTY_PATH,
+                    inputs={"user_prompt": prompt, "response": response},
+                )
                 if isinstance(raw, str):
                     raw = json.loads(raw)
                 scores.append(int(raw["score"]))
