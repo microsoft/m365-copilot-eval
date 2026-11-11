@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "2.0.0",
+  "items": [
+    {
+      "prompt": "What is the weather?",
+      "evaluators": {
+        "ToolCallExecution": {
+          "calls": [
+            {
+              "tool": {
+                "plugin_id": "T_contoso-weather",
+                "function_name": "get_forecast"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
