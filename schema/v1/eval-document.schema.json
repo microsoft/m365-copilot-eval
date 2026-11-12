@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v1/eval-document.schema.json",
   "title": "M365 Copilot Eval Document",
-  "description": "Schema for evaluation documents used by M365 Copilot Agent Evals CLI. Supports single-turn and multi-turn evaluations.",
+  "description": "Schema for evaluation documents used by M365 Copilot Evaluations CLI. Supports single-turn and multi-turn evaluations.",
   "type": "object",
   "required": ["schemaVersion", "items"],
   "additionalProperties": true,
@@ -53,9 +53,11 @@
         "createdBy":   { "type": "string", "description": "Author or system that created the document" },
         "evaluatedAt": { "type": "string", "format": "date-time", "description": "ISO 8601 timestamp when evaluation was performed" },
         "tags":        { "type": "array", "items": { "type": "string" }, "description": "Tags for categorization and filtering" },
+        "target":      { "type": "string", "enum": ["m365-copilot", "copilot"], "description": "Execution experience used to capture responses" },
+        "component":   { "type": "string", "enum": ["agent"], "description": "Agent component executed within the target; absent for the default Copilot experience" },
         "agentId":     { "type": "string", "description": "M365 Agent ID this evaluation targets" },
         "agentName":   { "type": "string", "description": "Name of the M365 agent this evaluation targets" },
-        "cliVersion":  { "type": "string", "description": "Version of the M365 Copilot Agent Evals CLI that produced this document" },
+        "cliVersion":  { "type": "string", "description": "Version of the M365 Copilot Evaluations CLI that produced this document" },
         "extensions":  { "type": "object", "additionalProperties": true, "description": "Extension point for custom metadata. Use reverse-domain notation for field names." }
       }
     },

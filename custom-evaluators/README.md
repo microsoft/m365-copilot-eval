@@ -9,12 +9,26 @@ or anything else the ten built-in evaluators don't cover.
 There are two kinds, and the CLI tells them apart automatically:
 
 - **LLM-judge** evaluators (`<name>.py` **and** `<name>.prompty`) — call an
-  LLM to score the response. They need Azure OpenAI config and use the 1-5
+  LLM to score the response, via the CLI-injected judge (see
+  [Authoring a custom evaluator](#authoring-a-custom-evaluator)). Use the 1-5
   scale.
 - **Code-only / non-LLM** evaluators (`<name>.py` only, **no** `<name>.prompty`)
   — pure Python checks with no LLM call (e.g. "fail if the response contains a
-  forbidden term"). They need no Azure OpenAI config and can return any numeric
+  forbidden term"). They need no judge configuration and can return any numeric
   score. See [Code-only (non-LLM) custom evaluators](#code-only-non-llm-custom-evaluators).
+
+Within LLM-judge evaluators, the constructor shape further determines which
+judge the evaluator can use:
+
+- **Portable** (recommended) — declares an explicit `judge` constructor
+  parameter. Runs unchanged against either judge backend (Azure OpenAI or
+  GitHub Copilot). See [The portable `judge` contract](#the-portable-judge-contract).
+- **Legacy Azure-only** — declares an explicit `model_config` constructor
+  parameter (the original contract). Only works with Azure OpenAI; the CLI
+  rejects it with migration guidance when a non-Azure judge (e.g.
+  `--judge-backend github-copilot`) is selected. Supported for the remainder
+  of this major version — migrate to `judge` when convenient. See
+  [Migrating a legacy evaluator to the portable contract](#migrating-a-legacy-evaluator-to-the-portable-contract).
 
 To use your own custom evaluators, create a `custom-evaluators/` folder
 at the root of your project (the directory you run the CLI from) and add
@@ -115,14 +129,16 @@ user:
 
 The Python module **MUST** export a class. The CLI dynamically imports
 the module and instantiates the first top-level class it finds. The
-class **MUST** match this contract:
+**portable** (recommended) contract is:
 
 ```python
 class MyEvaluator:
-    def __init__(self, *, model_config, threshold, options=None):
-        # model_config:  AzureOpenAIModelConfiguration
-        # threshold:     numeric pass/fail threshold
-        # options:       dict of extra config from the eval document
+    def __init__(self, *, judge, threshold, options=None):
+        # judge:      injected JudgeClient (see "The portable `judge`
+        #             contract" below) — Azure OpenAI or GitHub Copilot,
+        #             whichever --judge-backend selects
+        # threshold:  numeric pass/fail threshold
+        # options:    dict of extra config from the eval document
         # Any of these you don't use can be absorbed instead of named — see
         # "Absorbing constructor parameters you don't use" below.
         ...
@@ -176,9 +192,11 @@ evaluator is invoked, and if your evaluator raises on empty/null input the
 CLI still categorizes it as `emptyAgentResponse`. A malformed return value (not a
 dict, or a missing / non-numeric / out-of-range `score`) is categorized as
 `invalidEvaluatorResult`; a failure to import/resolve your evaluator module is
-`evaluatorLoadError`; a rate-limit or timeout from an LLM-judge call maps to
-`judgeRateLimited` / `judgeTimeout`; an explicit `{"error": ...}` signal and
-anything else maps to `evaluatorError`.
+`evaluatorLoadError`; authentication, rate-limit, and timeout failures from an
+LLM-judge call map to `judgeAuthenticationError`, `judgeRateLimited`, and
+`judgeTimeout`, respectively. Invalid JSON output maps to
+`judgeOutputUnparseable`; an explicit `{"error": ...}` signal and anything
+else maps to `evaluatorError`.
 
 **Score constraints (LLM-judge):**
 - `score` MUST be an integer in `[1, 5]` (same 1-5 scale as built-in LLM
@@ -194,7 +212,7 @@ anything else maps to `evaluatorError`.
 ### Absorbing constructor parameters you don't use
 
 The framework always passes `threshold` and `options` to `__init__` (plus
-`model_config` for LLM-judge evaluators). Python requires your `__init__`
+`judge` for LLM-judge evaluators). Python requires your `__init__`
 to **accept** every keyword it's called with — but you don't have to
 **name** the ones you ignore. A parameter must be named only if you
 actually use it; anything else can be soaked up by a `**_` catch-all.
@@ -212,7 +230,7 @@ class ForbiddenTermsEvaluator:
 
 # A check needing no config at all — absorb everything:
 class NonEmptyEvaluator:
-    def __init__(self, **_):  # ignores model_config, threshold, options
+    def __init__(self, **_):  # ignores judge, threshold, options
         pass
 
     def __call__(self, *, response: str = "", **_) -> dict:
@@ -253,33 +271,173 @@ the rest with `**_` (as shown in the signature above); a `__call__` that
 omits one of the four without a `**kwargs` catch-all raises `TypeError`,
 and that evaluator reports an error result.
 
-Inside your wrapper you own the call to the prompty flow, so your
-prompty's `inputs:` block can declare **any names you invent**
-(e.g. `aspect`, `rubric`) — your wrapper supplies them.
+Inside your wrapper you own the call to the judge, so your prompty's
+`inputs:` block can declare **any names you invent** (e.g. `aspect`,
+`rubric`) — your wrapper supplies them.
 
-### Preparing `model_config` for `load_flow`
+### The portable `judge` contract
 
-The `promptflow.client.load_flow` runtime needs a `"type"` field on the
-config dict to pick the right connection class (AzureOpenAI vs OpenAI).
-The `AzureOpenAIModelConfiguration` the CLI passes you doesn't carry that
-field, so you need to add it before calling `load_flow`:
+A portable LLM-judge evaluator declares an explicit keyword-only
+constructor parameter named exactly `judge`:
 
 ```python
-prepared_config = dict(model_config)
-prepared_config.setdefault(
-    "type",
-    "azure_openai" if "azure_endpoint" in prepared_config else "openai",
-)
-self._flow = load_flow(source=prompty_path, model={"configuration": prepared_config})
+class MyEvaluator:
+    def __init__(self, *, judge, threshold=3, options=None):
+        self._judge = judge
 ```
 
-Without this, you'll see the misleading error
-`"Not Support connection type None for embedding api"` at invocation time.
-All three reference examples in this folder do this step in their
-`__init__`; copy-paste from one of them when starting a new evaluator.
+The CLI injects a provider-neutral judge client — Azure OpenAI or GitHub
+Copilot, whichever `--judge-backend` selects — instead of Azure model
+configuration. This is what makes the evaluator **portable**: it runs
+unchanged regardless of which judge backend the run uses. The evaluator
+must not close, replace, or reconfigure the injected judge — the CLI owns
+its authentication, connection, concurrency, and lifecycle.
 
-See `professional_tone/professional_tone.py` for a minimal end-to-end
-example.
+The injected `judge` exposes exactly one operation:
+
+```python
+def invoke_prompty(
+    self,
+    *,
+    prompty_path: Path,
+    inputs: Mapping[str, Any],
+) -> str:
+    ...
+```
+
+- `prompty_path` — the path to your evaluator's own `.prompty` file
+  (typically `Path(__file__).parent / "<name>.prompty"`).
+- `inputs` — the values your prompty's `inputs:` block declares, e.g.
+  `{"user_prompt": prompt, "response": response}`.
+- Returns the raw model response as **text** — always a string, even if the
+  provider's native response is structured (e.g. a JSON object). Parse it
+  yourself (`json.loads`, regex, etc.) the way the reference examples do.
+  `invoke_prompty` never interprets evaluator-specific fields like `score`
+  or `reason` — that parsing is entirely your evaluator's responsibility.
+- Any provider authentication failure, timeout, rate limit, transport
+  error, empty response, or rendering failure raises a typed judge error
+  instead of returning `None` or a silently-empty string; let it propagate
+  (or catch and return `{"error": ...}` if you want a custom message, as
+  `consistency_check` does per-sample).
+- Safe to call repeatedly and from independently executing evaluators —
+  useful for self-consistency sampling (see `consistency_check`).
+
+Changing the judge backend or judge model can change score distributions
+even when the same prompty is used — a score of `4` from Azure OpenAI and
+a score of `4` from GitHub Copilot are not guaranteed to reflect identical
+underlying judgments, only the same rubric.
+
+#### Copilot Prompty parameter limitations
+
+The GitHub Copilot judge currently ignores all entries under Prompty
+`model.parameters`: the SDK session API does not expose direct equivalents for
+these generation settings. Evaluation still proceeds, with one warning per
+Prompty file per pipeline run identifying the ignored parameters.
+
+| Parameters | Behavior under GitHub Copilot |
+| --- | --- |
+| `temperature`, `top_p`, `presence_penalty`, `frequency_penalty` | Not forwarded; Copilot uses provider defaults. |
+| `max_tokens` | Does not impose the declared output-token limit. |
+| `response_format` | Does not enforce JSON or a structured-output schema. |
+| Other `model.parameters` entries | Also ignored, with their names included in the warning. |
+
+The rendered rubric can still ask for JSON, but that is an instruction rather
+than an enforced output format. Your evaluator remains responsible for parsing
+the response and handling invalid output.
+
+Use `--judge-backend azure` when these settings must be applied. Azure passes
+them through Promptflow, subject to the selected model's support. The same
+Prompty can run under either provider, but its generation settings are not
+guaranteed to behave identically. This parameter warning does not change
+API-mode support; unsupported API modes still raise a judge error.
+
+#### Copilot conversation-role limitations
+
+The Copilot adapter renders a chat-mode Prompty as system instruction text plus
+a single user prompt. For few-shot or multi-turn content, it combines user
+messages, includes `assistant` and other non-system/user messages as role-labeled
+plain text, and combines or repositions system messages. Labels such as
+`assistant:` are not actual chat roles, so the original conversation semantics
+are approximated rather than preserved.
+
+Evaluation continues with one warning per Prompty file per pipeline run,
+identifying the affected roles. A single user message, optionally preceded by
+one system message, does not produce this warning. Use `--judge-backend azure`
+when the original message
+roles and boundaries must be preserved. Completion-mode Prompty files remain
+unsupported by the Copilot adapter and raise a judge error.
+
+#### Unit-testing with a judge stub
+
+You can test your evaluator's orchestration and parsing without a CLI or model
+provider by supplying a small duck-typed stub. It only needs the
+`invoke_prompty(*, prompty_path, inputs) -> str` operation described above;
+inheriting from `JudgeClient` is not required. Keep the stub in your own tests,
+not in evaluator production code:
+
+```python
+from pathlib import Path
+from typing import Any, Mapping
+
+
+class StubJudge:
+    def __init__(self, response: str):
+        self.response = response
+        self.calls = []
+
+    def invoke_prompty(self, *, prompty_path: Path, inputs: Mapping[str, Any]) -> str:
+        self.calls.append({"prompty_path": prompty_path, "inputs": dict(inputs)})
+        return self.response
+
+
+judge = StubJudge(response='{"score": 4, "reason": "professional"}')
+evaluator = ProfessionalToneEvaluator(judge=judge, threshold=3, options={})
+result = evaluator(prompt="How do I file an expense report?", response="...")
+assert result["score"] == 4
+assert judge.calls[0]["inputs"]["response"] == "..."
+```
+
+To exercise failure handling, have the stub raise `JudgeError` with an appropriate
+error code rather than returning an error-shaped response. The CLI does not ship
+a fake judge as part of its production API.
+
+### Migrating a legacy evaluator to the portable contract
+
+An existing evaluator built against the original contract declares
+`model_config` instead of `judge`:
+
+```python
+def __init__(self, *, model_config, threshold, options=None):
+    ...
+```
+
+This remains supported for the rest of this major version — it works with
+Azure OpenAI only, and the CLI rejects it with migration guidance the
+moment a non-Azure judge (e.g. `--judge-backend github-copilot`) is
+selected. It is removed in the next major release, so migrate when
+convenient:
+
+1. Rename the constructor parameter `model_config` → `judge`.
+2. Replace any `promptflow.client.load_flow(...)` construction with just
+   storing `self._judge = judge` — no `load_flow`, no `"type"` field prep,
+   no `promptflow` import needed.
+3. Replace each `self._flow(**inputs)` call with
+   `self._judge.invoke_prompty(prompty_path=<path to your .prompty>, inputs={...})`.
+
+The CLI classifies your constructor once, at load time, by explicit
+parameter names — not by runtime behavior:
+
+| Explicit `judge` | Explicit `model_config` | Accepts `**kwargs` | Classification and behavior |
+| ----------------- | ------------------------ | ------------------- | ---------------------------- |
+| Yes | No | Either | Portable — injected `judge` |
+| No | Yes | Either | Legacy Azure-only — injected `model_config`, emits one migration warning |
+| Yes | Yes | Either | Invalid and ambiguous — rejected before evaluation |
+| No | No | Yes | Legacy-compatible, not portable — preserves the old Azure call shape; rejected with migration guidance for a non-Azure judge |
+| No | No | No | Invalid constructor — rejected with the required constructor signatures |
+
+`professional_tone/`, `answer_accuracy/`, and `consistency_check/` in this
+folder already use the portable `judge` contract — copy one of them as a
+starting point.
 
 ---
 
@@ -304,12 +462,12 @@ range or threshold for graded checks (see [Result contract](#result-contract-sam
 
 | | LLM-judge (`.py` + `.prompty`) | Code-only (`.py` only) |
 | --- | --- | --- |
-| `__init__` kwargs | `model_config`, `threshold`, `options` | `threshold`, `options` (**no** `model_config`) |
+| `__init__` kwargs | `judge` (portable) or `model_config` (legacy), `threshold`, `options` | `threshold`, `options` (**no** `judge`) |
 | `score` | integer `1-5` | any number, no 1-5 clamp (typically `0`/`1`) |
 | Default `threshold` | `3` | `1` |
-| Azure OpenAI config | required | not required |
+| Judge configuration | required (Azure OpenAI or GitHub Copilot) | not required |
 
-The `__init__` for a code-only evaluator therefore omits `model_config`:
+The `__init__` for a code-only evaluator therefore omits `judge`:
 
 ```python
 class ForbiddenTermsEvaluator:

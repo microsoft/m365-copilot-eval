@@ -5,6 +5,26 @@ All notable changes to the eval document schema will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 2.0.0 (2026-11-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **cli:** default to Microsoft 365 Copilot with opt-in agent execution
+
+### Features
+
+* **cli:** default to Microsoft 365 Copilot with opt-in agent execution
+* **evals:** identify tool calls by package and toolset IDs
+
+## 1.11.0 (2026-10-07)
+
+
+### Features
+
+* **a2a:** handle input-required pauses with a tool-call allowlist
+* add tool call selection and tool call execution evaluators
+
 ## 1.10.0 (2026-08-18)
 
 

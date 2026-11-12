@@ -1,5 +1,36 @@
 # Changelog
 
+## 2.0.0-preview1 (2026-11-11)
+
+
+### ⚠ BREAKING CHANGES
+
+* **evals:** CLI v2 requires schema-v2 documents. Schema-v1 and unversioned documents are rejected.
+* **cli:** default to Microsoft 365 Copilot with opt-in agent execution
+
+### Features
+
+* **cli:** default to Microsoft 365 Copilot with opt-in agent execution
+* **evals:** identify tool calls by package and toolset IDs
+
+
+### Bug Fixes
+
+* **a2a:** add configurable timeouts and retries to agent discovery
+
+## 1.19.0 (2026-11-06)
+
+
+### Features
+
+* Custom Evaluators using github copilot judge
+
+
+### Bug Fixes
+
+* **a2a:** include actionId in single-consent resume requests
+* remove expiry check for GA releases
+
 ## 1.18.0 (2026-10-06)
 
 
@@ -135,7 +166,7 @@
 * point package.json repository and homepage to public npm repo
 * prevent flaky progress test from corrupting test runner IPC
 * **release:** reset release-please manifest to GA baseline
-* resolve custom evaluators, --prompts-file and --output paths relative to cwd (#371, #415)
+* resolve custom evaluators, --prompts-file and --output paths relative to cwd (, )
 * resolve debug log redaction false positives on agent IDs and URLs
 * use dotenv.parse() in env-loader to handle inline comments in .env files
 
@@ -144,7 +175,7 @@
 
 ### Bug Fixes
 
-* resolve custom evaluators, --prompts-file and --output paths relative to cwd (#371, #415)
+* resolve custom evaluators, --prompts-file and --output paths relative to cwd (, )
 
 ## 1.10.1-preview.1 (2026-06-11)
 

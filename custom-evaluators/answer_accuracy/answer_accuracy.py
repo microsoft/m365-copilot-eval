@@ -11,34 +11,32 @@ Demonstrates a custom evaluator that consumes all four eval-document
 fields. Reference it from an eval document like:
 
     "evaluators": { "answer_accuracy": { "threshold": 4 } }
+
+Uses the portable ``judge`` contract (spec FR-016C): the CLI injects a
+provider-neutral :class:`~judge_client.JudgeClient` — Azure OpenAI or GitHub
+Copilot, whichever ``--judge-backend`` selects — instead of Azure model
+configuration, so this evaluator runs unchanged on either judge.
 """
 
 from __future__ import annotations
 
 import json
 import os
+from pathlib import Path
 from typing import Any, Dict, Optional
 
-from promptflow.client import load_flow
+_PROMPTY_PATH = Path(__file__).parent / "answer_accuracy.prompty"
 
 
 class AnswerAccuracyEvaluator:
     def __init__(
         self,
         *,
-        model_config: Any,
+        judge: Any,
         threshold: float,
         options: Optional[Dict[str, Any]] = None,
     ) -> None:
-        prepared = dict(model_config)
-        prepared.setdefault(
-            "type",
-            "azure_openai" if "azure_endpoint" in prepared else "openai",
-        )
-        self._flow = load_flow(
-            source=os.path.join(os.path.dirname(__file__), "answer_accuracy.prompty"),
-            model={"configuration": prepared},
-        )
+        self._judge = judge
 
     def __call__(
         self,
@@ -49,13 +47,16 @@ class AnswerAccuracyEvaluator:
         context: str = "",
         **_: Any,
     ) -> Dict[str, Any]:
-        # NOTE: forward as `user_prompt`, not `prompt` — `prompt` is reserved
-        # inside promptflow.Prompty.__call__.
-        raw = self._flow(
-            user_prompt=prompt,
-            expected_response=expected_response,
-            response=response,
-            context=context,
+        # NOTE: forward as `user_prompt`, not `prompt` — `prompt` is a
+        # reserved input name inside promptflow's Prompty rendering.
+        raw = self._judge.invoke_prompty(
+            prompty_path=_PROMPTY_PATH,
+            inputs={
+                "user_prompt": prompt,
+                "expected_response": expected_response,
+                "response": response,
+                "context": context,
+            },
         )
         if isinstance(raw, str):
             raw = json.loads(raw)

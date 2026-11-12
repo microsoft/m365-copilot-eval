@@ -1,319 +1,138 @@
-# M365 Copilot Agent Evaluations
+# Microsoft 365 Copilot Evaluations
 
-> This tool is Generally Available. [Full documentation on Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-overview)
->
-A CLI for evaluating M365 Copilot agents. Send prompts to your agent, get responses, and automatically score them with Azure AI Evaluation metrics.
+**Test your Copilot extensions. Measure quality. Improve with confidence.**
 
-| Evaluator | Type | Scale | Default | Description|
-|-----------|------|-------|---------|------------|
-| Relevance ⭐ | LLM-based | 1-5 | Yes | Assesses how well the agent's response addresses the user's query.|
-| Coherence ⭐ | LLM-based | 1-5 | Yes | Measures the logical and orderly presentation of ideas in the agent's response.|
-| Groundedness | LLM-based | 1-5 | No | Assesses whether the agent's response is consistent with and supported by the provided grounding context.|
-| Similarity | LLM-based | 1-5 | No | Measures the degree of semantic similarity between the agent's response and a provided expected_response|
-| Citations | Count-based | ≥ 0 | No | Counts the number of citation references. |
-| RetrievalQuery | Non-LLM | pass/fail | No | Assesses if Copilot correctly translated user intent into retrieval queries.|
-| RetrievalResult | Non-LLM | pass/fail | No | Validates that expected resources actually appear in the documents, messages, and items returned by retrieval executions.|
-| ToolCallSelection | Non-LLM | pass/fail/error | No | Validates which plugin functions WorkIQ selected using Developer Info telemetry. Unavailable evidence produces an errored score with a tool-specific code.|
-| ToolCallExecution | Non-LLM | pass/fail/error | No | Validates that successful matching HTTP 2xx executions meet the expected call multiplicity. Additional attempts are allowed; indeterminate evidence produces an errored score.|
-| ExactMatch | String match | boolean | No | Measures the degree of textual overlap between the agent's response and the expected_response. |
-| PartialMatch | String match | 0.0–1.0 | No | Performs a direct string comparison between the agent's response and the expected_response. |
-- Multiple input modes: command‑line list, JSON file, interactive.
-- Multiple output formats: console (colorized), JSON, CSV, HTML (auto‑opens report).
+Evaluate Microsoft 365 Copilot agents and plugins (in V2 Preview). Run repeatable tests and review results in HTML, JSON, or CSV.
 
-## 📋 Prerequisites
+> **V2 preview.** The default execution behavior changes from agent selection to Microsoft 365 Copilot. 
+> Read the [v2 upgrade guide](./docs/upgrade-to-v2.md) before upgrading.
+> Preview changes are marked with Preview tag at the beginning of the section.
 
-- **M365 Copilot License** for your tenant
-- **M365 Copilot Agent** deployed to your tenant (can be created with [M365 Agents Toolkit](https://learn.microsoft.com/en-us/microsoft-365/developer/overview-m365-agents-toolkit) or any other method)
-- **Node.js 24.12.0+** (check: `node --version`)
-- **Python 3.13.x** is downloaded automatically. If the download fails (e.g., network restrictions), set `PYTHON_PATH` to a local Python 3.13.x installation (see [Troubleshooting](#-troubleshooting))
-- **Environment file** with your credentials and agent ID (see [Environment Setup](#-environment-setup) below)
-- **Your Tenant ID** - get your tenant id using the instructions [here](https://learn.microsoft.com/en-us/azure/azure-portal/get-subscription-tenant-id) 
-- Admin approval to run WORKIQ Client App for your tenant [here](https://github.com/microsoft/work-iq/blob/main/ADMIN-INSTRUCTIONS.md)
-- **Azure OpenAI endpoint, and API key** (see [Getting Variables](#-getting-variables) below)
+[Quick Start](#quick-start) | [Preview: Plugin Evaluations](#preview) | [Agent Evaluations](#agent-evaluations) | [Evaluators](#evaluators) | [Judges](#judges) | [Troubleshooting](#troubleshooting)
 
-> **Platform authentication support:**
-> - **Windows** — Windows Account Manager (WAM) broker, built-in.
-> - **macOS** — Company Portal broker. Install Microsoft Company Portal before running.
->   - **Known limitation (Intel Macs):** Sign-in via the broker is currently failing on Intel-based Macs. Apple Silicon (M-series) Macs are not affected. The MSAL team is investigating; progress is tracked in [AzureAD/microsoft-authentication-library-for-python#908](https://github.com/AzureAD/microsoft-authentication-library-for-python/issues/908).
-> - **Linux / WSL** — Intune broker. Install the required system libraries first:
->   ```bash
->   sudo apt install libwebkit2gtk-4.1-0 libdbus-1-dev python3-gi gir1.2-secret-1 libubsan1
->   ```
->   If the required libraries are missing, the authentication library raises an `ImportError` instead of falling back to browser-based authentication — install the packages above before running.
+**Choose a version:** V1 uses the npm `latest` tag and includes agent evaluations, GitHub Copilot and Azure judges, and the evaluators below. V2 uses the `preview` tag for plugin evaluations. The main sections cover V1; V2-specific instructions are in [Preview](#preview).
 
-## 🔧 Environment Setup
+## Quick Start
 
-### Install the Tool
+You need the following pre-requisites -
+1. **[Node.js 24.12.0+](https://nodejs.org/en/download)**, 
+2. a **Microsoft 365 Copilot license**, your **tenant ID**, and 
+3. [tenant admin approval for the WorkIQ Client App](https://github.com/microsoft/work-iq/blob/main/ADMIN-INSTRUCTIONS.md). 
+4. Python 3.13 is downloaded and cached automatically. You do not need to clone this repository.
 
-```bash
-# 1. Install
-npm install -g @microsoft/m365-copilot-eval
+The below example evaluates a deployed agent using the **GitHub Copilot judge**, which requires [GitHub CLI](https://cli.github.com/) and GitHub Copilot access. Azure is also supported; see [Judges](#judges).
 
-# 2. Run from your agent project directory
-cd /path/to/your-agent-project
-runevals --version
+Install **V1 (`latest`)** and accept the license terms:
+
+```powershell
+npm install -g @microsoft/m365-copilot-eval@latest
+runevals accept-eula
 ```
 
-### Setup Steps
-
-Now, set the following environment variables wherever you are running your evals 
-
-```bash
-TEAMS_APP_TENANT_ID="your-tenant-id" 
-AZURE_AI_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
-AZURE_AI_API_KEY="<your-api-key-from-azure-portal>"
-AZURE_AI_API_VERSION="2024-12-01-preview"  
-AZURE_AI_MODEL_NAME="gpt-4o-mini"      
+sign in to GitHub:
+```powershell
+gh auth login
 ```
 
-Or store environment variables in a `.env` file for the tool to pick up:
+In your evaluation folder, set your [tenant ID](https://learn.microsoft.com/en-us/sharepoint/find-your-office-365-tenant-id) and run a quick check:
 
-#### Option 1: For M365 Agents Toolkit (ATK) Projects
-
-ATK projects already check in `.env.local` with `M365_TITLE_ID`. **Do not put secrets in `.env.local`** — use `.env.local.user` instead, which is loaded automatically and should be added to your `.gitignore`.
-
-```bash
-# .env.local (checked in — no secrets!)
-# Already present from ATK:
-M365_TITLE_ID="T_your-title-id-here"  # Auto-generated by ATK
-TEAMS_APP_TENANT_ID="your-tenant-id"  # Auto-generated by ATK
+```powershell
+$env:TENANT_ID = "<your-tenant-id>"
+runevals --m365-agent-id "<your-agent-id>" --judge-backend github-copilot --prompts "What can you help me with?" --output results.html
 ```
 
-```bash
-# .env.local.user (NOT checked in — secrets go here)
-AZURE_AI_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
-AZURE_AI_API_KEY="<your-api-key-from-azure-portal>"
-AZURE_AI_API_VERSION="2024-12-01-preview"  # default
-AZURE_AI_MODEL_NAME="gpt-4o-mini"           # recommended
+Sign in to Microsoft 365 when prompted. Open `results.html` to review the default **Relevance** and **Coherence** scores.
+
+Ready to try some complex datasets? Checkout our sample datasets [here](https://github.com/microsoft/m365-copilot-eval/tree/main/schema/v1/examples/valid) and [here](https://github.com/microsoft/m365-copilot-eval/tree/main/samples).
+
+## Preview
+
+### Plugin Evaluations
+
+Plugin evaluations require **V2 Preview (`preview`)**, not V1 (`latest`). Once a V2 Preview package is published, install it with:
+
+```powershell
+npm install -g @microsoft/m365-copilot-eval@preview
+runevals accept-eula
 ```
 
-Add `.env.local.user` to your `.gitignore`:
+Evaluate the quality of **Copilot responses that use an available plugin**. Provision and enable the plugin in Microsoft 365 Copilot first.
 
-```gitignore
-# User-specific secrets — never commit
-.env.local.user
-env/.env.local.user
-```
+With no configured agent ID, V2 evaluates Microsoft 365 Copilot chat. Keep `M365_AGENT_ID` and legacy `AGENT_ID` out of your shell and loaded environment files for plugin runs. This evaluates the Copilot experience, not a plugin endpoint in isolation.
 
-#### Option 2: For Non-ATK Projects
-
-Create `env/.env.dev` in your project directory:
-
-```bash
-# env/.env.dev (new file you create)
-# Your agent ID (Optional):
-M365_AGENT_ID="your-agent-id"  # e.g., U_0dc4a8a2-b95f-edac-91c8-d802023ec2d4
-
-# You'll add these (see Getting Variables section below):
-AZURE_AI_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
-AZURE_AI_API_KEY="<your-api-key-from-azure-portal>"
-AZURE_AI_API_VERSION="2024-12-01-preview"  # default
-AZURE_AI_MODEL_NAME="gpt-4o-mini"           # recommended
-TENANT_ID="<your-tenant-id>"
-```
-- If you are storing your environment variables in `.env.local` or `.env.dev`, just run `runevals` — these files are auto-detected (`.env.local` first, then `.env.dev`; each looked up in the current directory, then the `env/` folder). For any other file, pass the selector, e.g. `runevals --env prod` loads `env/.env.prod`.
-- You can also override the agent ID at runtime: `runevals --m365-agent-id "custom-id"`
-
-#### Environment file resolution & precedence
-
-**`--env` omitted (auto-detect):** loads a single base file — `.env.local` if present, otherwise `.env.dev` (each searched in the current directory, then its `env/` folder) — and then applies its paired personal-secrets override last (**`.env.local.user`** for the `.env.local` base, **`.env.dev.user`** for the `.env.dev` base) so personal secrets win. If **both** `.env.local` and `.env.dev` exist, `.env.local` wins and the CLI reminds you to pass `--env dev` to use `.env.dev`. If any other `.env.*` file is present, the CLI hints that you can select it with `--env`. If nothing is found, it continues with system environment variables.
-
-**`--env <name>` given (layered, later wins):**
-
-1. **`.env.local`** — base (searched in the current directory, then its `env/` folder).
-2. **`.env.local.user`** — personal secrets, never checked in.
-3. **`env/.env.<name>`** — the named file, layered on top (falling back to the package env directory). If the named file does not exist the CLI warns and continues with the vars already loaded.
-
----
-
-## 🔑 Getting Variables
-
-📖 [How to get these values →](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-get-env-values)
-
-**New feature alert!** You can now use `DefaultAzureCredential` instead of `AZURE_AI_API_KEY` for authenticating your Azure LLM models! 
-
-### Azure OpenAI Authentication Mode
-
-By default, the CLI authenticates to Azure OpenAI using an API key (`AZURE_AI_API_KEY`). If your organization disables key-based access or you prefer keyless authentication, you can use `DefaultAzureCredential` (Microsoft Entra ID) instead.
-
-**Option A: API Key (default)**
-
-Set `AZURE_AI_API_KEY` in your env file — the CLI uses it automatically.
-
-**Option B: DefaultAzureCredential (keyless)**
-
-1. Sign in to Azure CLI: `az login --tenant <your-tenant-id>`
-2. Assign the **Cognitive Services OpenAI User** role to your identity on the Azure OpenAI resource
-3. Remove or leave `AZURE_AI_API_KEY` empty in your env file
-4. Run the CLI — it auto-detects the missing key and uses `DefaultAzureCredential`
-
-You can also explicitly select the auth mode:
-
-```bash
-# Explicit keyless authentication
-runevals --azure-ai-auth-mode default-credential
-
-# Explicit API key authentication
-runevals --azure-ai-auth-mode key
-```
-
-**Fallback behavior (auto-detect):**
-
-| `AZURE_AI_API_KEY` set? | `--azure-ai-auth-mode` flag | Auth used |
-|---|---|---|
-| ✅ Yes | _(not provided)_ | API key |
-| ❌ No | _(not provided)_ | DefaultAzureCredential |
-| — | `key` | API key (fails if key missing) |
-| — | `default-credential` | DefaultAzureCredential |
-
-> **Note:** `DefaultAzureCredential` tries multiple credential sources in order: Azure CLI, Azure PowerShell, environment variables, managed identity, and more. See [Azure Identity docs](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential) for details.
-
-**Selecting a tenant:** If your Azure OpenAI resource lives in a tenant other than your credential's default (common for guest accounts or multi‑tenant orgs), set the `AZURE_TENANT_ID` environment variable to the target tenant's ID. `DefaultAzureCredential` honors this variable and signs in against that tenant.
-
-```bash
-# Direct DefaultAzureCredential at a specific tenant
-AZURE_TENANT_ID="<your-tenant-id>"
-```
-
-> **Tip:** For the Azure CLI credential specifically, you can instead sign in to the tenant directly with `az login --tenant <your-tenant-id>`. Setting `AZURE_TENANT_ID` covers the other credential sources (environment, managed identity, etc.) as well.
-
-### Advanced: Request Timeout & Retries (Optional)
-
-Calls to the Work IQ A2A agent use sensible defaults that work for most workloads. For long-running agents (multi-step reasoning, large tool calls, slow downstream services) you can tune the HTTP request behavior with these optional environment variables:
-
-| Variable | Default | Description |
-|---|---|---|
-| `WORKIQ_REQUEST_TIMEOUT_SECS` | `300` | HTTP request timeout, in seconds, applied to each prompt/response request sent to the agent. Increase it if agent responses routinely exceed five minutes. Invalid or non-positive values fall back to the default. (Agent discovery and agent-card resolution use a fixed 300s timeout and are not affected by this setting.) |
-| `WORKIQ_REQUEST_MAX_ATTEMPTS` | `4` | Maximum number of attempts (initial try + retries) for an agent request. Retries cover transient failures: retryable HTTP statuses (`429`, `503`, `504`) and socket timeouts. Values below `1` or non-integers fall back to the default. |
-
-```bash
-# Example: allow a bit more time per request and one extra retry
-WORKIQ_REQUEST_TIMEOUT_SECS="420"
-WORKIQ_REQUEST_MAX_ATTEMPTS="5"
-```
-
-> **Note:** Transient failures (retryable HTTP statuses and socket timeouts) are retried for both single-turn prompts and individual multi-turn turns. Because a timed-out turn may have already been processed server-side, a multi-turn retry can occasionally duplicate that turn in the conversation; the agent is still expected to respond with the correct content. HTTP `401` responses are handled separately by a single automatic token refresh.
-
-## 🚀 Quick Start
-
-Now that you have your environment variables set up, you're ready to run evaluations!
-
-> **Important:** Run this tool FROM your M365 agent project directory (where your agent code lives), **not** from this repository. You don't need to clone or download this repo.
-
-```bash
-# Navigate to YOUR agent project directory
-cd /path/to/your-agent-project
-
-# Run evaluations (auto-discovers .env.local for ATK projects)
-runevals
-
-# Or specify an environment file
-runevals --env dev
-```
-
-**No prompts file?** If you don't have a prompts file yet, the tool will offer to create a starter file with example prompts for you.
-
-**Environment file lookup:**
-- When `--env` is omitted, auto-detects `.env.local`, then `.env.dev` (current dir, then `env/` folder)
-- With `--env {name}`, loads `env/.env.{name}` layered on the `.env.local` base (warns and continues if the file is missing)
-- Prompts file auto-discovery works the same for all projects
-
-
----
-
-## 📝 Eval Document Format
-
-The eval document schema is versioned independently from the CLI, following [Semantic Versioning](https://semver.org/).
-
-- **Schema location**: [`schema/v1/eval-document.schema.json`](schema/v1/eval-document.schema.json)
-- **Schema changelog**: [`schema/CHANGELOG.md`](schema/CHANGELOG.md)
-
-> **New in Schema v1.2.0**: Multi-turn conversation threads — test context persistence across multiple turns within a shared conversation session. Each thread supports 1-20 turns.
-
-> **New in Schema v1.1.0**: Per-prompt evaluator overrides with `evaluators_mode` (`extend`/`replace`), file-level `default_evaluators`, and `ExactMatch`/`PartialMatch` evaluators.
-
-### Getting Started
-
-The CLI auto-discovers prompts files in your project. When you run `runevals`, it searches:
-1. Current directory: `prompts.json`, `evals.json`, `tests.json`
-2. `./evals/` subdirectory: `prompts.json`, `evals.json`, `tests.json`
-
-**No prompts file?** The CLI will offer to create a starter file with example prompts for you.
-
-A minimal eval document:
+For example, save this as `evals\plugins.json`. Replace the prompt and consent name with values for your plugin:
 
 ```json
 {
-  "schemaVersion": "1.6.0",
-  "items": [
-    {
-      "prompt": "What is Microsoft 365?",
-      "expected_response": "Microsoft 365 is a cloud-based productivity suite..."
-    }
-  ]
-}
-```
-
-### Evaluator Configuration
-
-Use `default_evaluators` to set file-level defaults, and per-item `evaluators` with `evaluators_mode` to customize:
-
-```json
-{
-  "schemaVersion": "1.6.0",
+  "schemaVersion": "1.11.0",
+  "default_allowed_tools": ["ContosoCatalog_get_product"],
   "default_evaluators": {
     "Relevance": {},
     "Coherence": {}
   },
   "items": [
     {
-      "prompt": "What is Microsoft Graph?",
-      "expected_response": "A unified API endpoint for Microsoft services.",
+      "prompt": "Use the Contoso Catalog plugin to find the price of product SKU-123."
+    }
+  ]
+}
+```
+
+Run the plugin scenario through Copilot:
+
+```powershell
+runevals --judge-backend github-copilot --prompts-file evals\plugins.json --output plugin-results.html
+```
+
+Relevance and Coherence assess response quality; these scores don't prove that a plugin was invoked.
+
+**Safe execution:** Use read-only scenarios first and complete connector sign-in in Copilot. `default_allowed_tools` configures consent at document level; `allowed_tools` can be set per prompt. See the [allowlist example](schema/v1/examples/valid/allowed-tools.json).
+
+Installing either tag replaces the global `runevals` command. To return to V1, reinstall `@microsoft/m365-copilot-eval@latest`.
+
+## Agent Evaluations
+
+V1 (`latest`) evaluates deployed agents. For repeatable or unattended runs, supply an [agent ID](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-get-env-values#get-your-agent-id-m365_agent_id):
+
+```powershell
+runevals --m365-agent-id "<your-agent-id>" --judge-backend github-copilot --prompts-file evals\evals.json --output agent-results.html
+```
+
+`--m365-agent-id` overrides environment IDs. You can also configure `M365_AGENT_ID`. In ATK projects, run from the agent root folder and V1 resolves the agent ID from your project files:
+
+```powershell
+runevals --judge-backend github-copilot --prompts "What can you help me with?" --output agent-results.html
+```
+
+## Datasets and Results
+
+Keep regression tests in a JSON document. This example includes a single-turn check and a multi-turn conversation; replace the sample policy with your own content:
+
+```json
+{
+  "schemaVersion": "1.2.0",
+  "default_evaluators": {
+    "Relevance": { "threshold": 4 },
+    "Coherence": { "threshold": 3 }
+  },
+  "items": [
+    {
+      "prompt": "What is the dinner allowance?",
+      "expected_response": "Dinner is covered up to $75 per person.",
       "evaluators": {
-        "Groundedness": { "threshold": 4 }
-      },
-      "evaluators_mode": "extend"
+        "Similarity": { "threshold": 4 }
+      }
     },
     {
-      "name": "Expense policy flow",
+      "name": "Dinner expense follow-up",
       "turns": [
         {
-          "prompt": "I spent $250 on dinner. Is that okay?",
-          "expected_response": "The per-diem meal allowance is $200.",
-          "evaluators": {
-            "Citations": { "citation_format": "mixed" },
-            "RetrievalQuery": {
-              "capability": "OneDriveAndSharePoint",
-              "selector": "dinner",
-              "includes": [
-                "allowance"
-              ],
-              "excludes": [
-                "restaurant"
-              ]
-            },
-            "RetrievalResult": {
-              "capability": "OneDriveAndSharePoint",
-              "max_rank": 5,
-              "expected_items": [
-                {
-                  "retrievalExtract_contains": "$200"
-                },
-                {
-                  "retrievalExtract_contains": "allowance"
-                }
-              ]
-            }
-          },
-          "evaluators_mode": "extend"
+          "prompt": "My dinner cost $95. The allowance is $75. How much is over the limit?",
+          "expected_response": "The dinner is $20 over the limit."
         },
         {
-          "prompt": "What should I do about the overage?",
-          "expected_response": "Request manager approval.",
-          "evaluators": {
-            "ExactMatch": { "case_sensitive": false }
-          },
-          "evaluators_mode": "replace"
+          "prompt": "What if dinner cost $70 instead?",
+          "expected_response": "It would be $5 below the limit."
         }
       ]
     }
@@ -321,511 +140,201 @@ Use `default_evaluators` to set file-level defaults, and per-item `evaluators` w
 }
 ```
 
-**How evaluator modes work in this example:**
-
-| Item | `evaluators_mode` | Active Evaluators | Why |
-|------|-------------------|-------------------|-----|
-| Single-turn (Graph) | `extend` | Relevance, Coherence, Groundedness | Per-prompt Groundedness **merged** with defaults |
-| Multi-turn turn 1 (dinner) | `extend` | Relevance, Coherence, Citations, RetrievalQuery, RetrievalResult | Per-turn evaluators **merged** with defaults |
-| Multi-turn turn 2 (overage) | `replace` | ExactMatch | Per-turn ExactMatch **replaces** defaults entirely |
-
-### Evaluator Modes
-
-| Mode | Behavior |
-|------|----------|
-| `"extend"` (default) | Per-item evaluators **merge** with defaults. Both run. |
-| `"replace"` | Per-item evaluators **replace** defaults entirely. Only per-item evaluators run. |
-| _(none)_ | Inherits file-level `default_evaluators`, or system defaults (Relevance, Coherence) if not set. |
-
-See the [schema examples guide](schema/v1/examples/README.md) for runnable scenarios, per-turn evaluator overrides, mixed single/multi-turn files, output formats, and negative validation fixtures.
-
-### Tool-Call Allowlist (New in Schema v1.11.0)
-
-Some agents pause mid-turn to ask permission before calling a tool. `runevals` answers that prompt from an allowlist you declare in the eval document, so an unattended run stays reproducible.
-
-> **⚠️ The allowlist is not a list of the tools your agent is able to call, and not a record of the tools it did call.**
-> It decides only how `runevals` answers a confirmation prompt. A tool that does not pause is never checked against your list and runs regardless of whether you named it. Whether a tool pauses is decided by the platform and the agent's developer, not by this file — so a prompt can complete having called tools you deliberately left out. Treat the allowlist as a control for **unattended reproducibility**, never as a security boundary or an audit trail.
-
-```json
-{
-  "schemaVersion": "1.11.0",
-  "default_allowed_tools": ["github_orgs_get"],
-  "items": [
-    {
-      "prompt": "Summarize the MIT license",
-      "allowed_tools": ["learnmicro_microsoft_docs_search"],
-      "allowed_tools_mode": "replace"
-    }
-  ]
-}
-```
-
-| Mode | Behavior |
-|------|----------|
-| `"extend"` (default) | Per-item `allowed_tools` **merge** with `default_allowed_tools`. |
-| `"replace"` | Per-item `allowed_tools` **replace** the file-level defaults entirely. Combine with `[]` to forbid all tool use for one prompt. |
-| _(none)_ | Inherits `default_allowed_tools`. |
-
-Key points:
-
-- **There is no system default.** Unlike evaluators, an unconfigured document allows *nothing*: any tool the agent asks for is refused and the prompt fails with the `toolCallNotAllowed` error code. Nothing is executed, so this is distinct from a platform-side failure.
-- **Identifiers are matched whole**, exactly, after trimming. They take the form `namespace_toolname` — for example `learnmicro_microsoft_docs_search` is namespace `learnmicro` plus tool `microsoft_docs_search`. Copy the identifier verbatim from the agent's confirmation prompt; do not try to split it.
-- In multi-turn threads the allowlist resolves **per turn**: a turn without an override inherits the file-level default, not the previous turn's list.
-- **The allowlist gates the confirmation prompt, not the tool itself.** It can only refuse a call the agent *stops to ask about*. A call that never pauses runs unchecked — no refusal is logged, the run exits successfully, and nothing in the output marks it. `runevals` warns at the start of any run whose document configures an allowlist, restating this; it is a reminder, not a sign that anything went wrong.
-- **Whether a call pauses depends on the agent's declaration and on what was already consented.** Functions declared together in one action may be consented as a group, so approving one silently authorizes its siblings. A function may be declared to prompt on *every* call; one left at the default prompts only until it is consented if it merely retrieves data, but on every call otherwise. Consent then persists — across later prompts and later runs, including runs whose document does not list the tool. The declaration-level levers are [documented by Microsoft 365 Copilot](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/plugin-confirmation-prompts): `x-openai-isConsequential` on an API plugin's OpenAPI operation, `readOnlyHint` on an MCP tool's annotations.
-- **A turn may collect only one tool consent.** `runevals` answers a single confirmation per turn. If a turn pauses a **second** time, the turn fails with `agentRequestFailed`, naming the tool it was asking for. Answering more than one consent per turn is not supported pending platform work. The limit is per turn, not per run: a **multi-turn** evaluation in which each turn consents to one tool is handled normally, so splitting the work across turns avoids the problem.
-- **Sign-in prompts are not supported.** If a task pauses to authenticate with a downstream service (`auth-required`), `runevals` fails the prompt with `agentAuthenticationError`. The CLI cannot complete an interactive sign-in. Authorize the connection once in Microsoft 365 Copilot chat, then re-run the evaluation — the grant persists, so the pause does not recur.
-- Answering a pause requires A2A 1.0, whose message parts can carry the confirmation payload. Runs pinned to the legacy `0.3` protocol (via `WORKIQ_A2A_PROTOCOL_VERSION=0.3`) cannot approve tool calls.
-
-#### Finding your agent's tool identifiers
-
-`runevals --list-tools <agent-id>` prints both identity forms an agent declares:
-
-- `namespace_function` for `allowed_tools`;
-- `plugin_name` and `function_name` for `ToolCallSelection` and `ToolCallExecution`.
-
-These identities serve different purposes and are not interchangeable:
-
-| Purpose | Fields | Example |
-|---|---|---|
-| Approve a confirmation-gated call | One opaque `allowed_tools` string | `learnpinned_microsoft_docs_search` |
-| Evaluate tool selection or execution | Structured `plugin_name` and `function_name` | `Microsoft Learn Docs` / `microsoft_docs_search` |
-
-The evaluator `plugin_name` comes from the plugin's human name
-(`name_for_human`), not its namespace. Do not derive it by splitting or
-rewriting the `allowed_tools` identifier; copy each value from the matching
-section of the command output.
-
-This lets you author allowlists and tool-call evaluator expectations without first provoking a refusal or running a Developer Info capture:
-
-```bash
-runevals --list-tools T_f25e0c51-5271-5cb7-6a01-3f28b329c05e
-```
-
-```
-Tool identities declared by "pinned2mcpdev"
-
-For allowed_tools:
-  learnpinned_microsoft_docs_search
-  learnpinned_microsoft_code_sample_search
-  learnpinned_microsoft_docs_fetch
-
-For ToolCallSelection or ToolCallExecution (plugin_name / function_name):
-  Microsoft Learn Docs / microsoft_docs_search
-  Microsoft Learn Docs / microsoft_code_sample_search
-  Microsoft Learn Docs / microsoft_docs_fetch
-
-The two sections use different identity systems; do not substitute one for the other.
-Nothing is approved until you add an identifier to your evaluation document.
-```
-
-Copy the identities you need into your evaluation document. Nothing is approved until you add an `allowed_tools` identifier — this command only reports metadata and never edits your document or affects a run.
-
-Requirements and limits:
-
-- **Requires `atk` (Microsoft 365 Agents Toolkit CLI).** The agent manifest lives behind an API that `runevals` cannot call for you, and reading it needs an interactive sign-in — which is why this is a separate step rather than something a run does. **Expect a sign-in prompt the first time**; `atk` handles that itself, so there is nothing to set up beforehand. If it ever gets stuck, `atk auth login m365` signs you in directly.
-- **The toolkit's sign-in is separate from the one your runs use.** `atk` keeps a single Microsoft 365 account for the whole machine, shared with every other toolkit project, while `runevals` authenticates on its own. So discovery can fail on an account mismatch even though your evaluation runs fine. When that happens it names the account in use and offers to hand over to `atk`'s account picker. Switching affects your other toolkit projects, which is why it is never done without asking.
-- **`atk` is spawned, not bundled.** It is not a dependency of this package. An `atk` already on your PATH is used as-is; otherwise it falls back to `npx --yes @microsoft/m365agentstoolkit-cli`, which takes about a minute the first time and is cached afterwards. If neither is available it says so and points you at the refusal path below.
-- **Not every agent declares its tools.** An MCP action set to dynamic discovery resolves its tool list at call time, so there is nothing to read ahead of time. Those actions are reported by namespace as unavailable rather than quietly skipped, so a partial list never looks complete:
-
-  ```
-  ⚠️  This list is incomplete.
-
-  learndocs: tool names unavailable - the MCP server resolves its tools at call time (dynamic discovery).
-  ```
-
-- **The refusal path always works and needs no tooling.** Run the evaluation with the tool left out of `allowed_tools`: the failure names the exact identifier the agent asked for, which you can paste straight into the list. This is a good way to pick up any identifier you don't already know, including tools an MCP server resolves at call time.
-
-
-### Custom Evaluators (New in Schema v1.6.0)
-
-In addition to the 10 built-in evaluators, you can define your own **custom LLM-judge evaluators** for domain-specific scoring (regulatory compliance, brand tone, custom relevance rubrics, etc.). Drop a `.prompty` file and a `.py` wrapper into `<your_project>/custom-evaluators/<name>/` and reference it from any eval document:
-
-```json
-"evaluators": {
-  "Relevance": {},
-  "professional_tone": { "threshold": 4 }
-}
-```
-
-Each custom evaluator pairs a `.prompty` file (the LLM judge prompt) with a `.py` wrapper class that invokes it and parses the result. This supports everything from simple single-prompt scoring to multi-step LLM calls, custom output parsing, and score aggregation.
-
-See [`custom-evaluators/README.md`](custom-evaluators/README.md) for the full authoring guide and reference examples (`professional_tone`, `consistency_check`, `answer_accuracy`).
-
-### Auto-Upgrade Behavior
-
-When the CLI loads an eval document:
-
-- **Legacy documents** (missing `schemaVersion`): Automatically upgraded with a timestamped backup (e.g., `file.json.bak.20260205143052`)
-- **Older versions** (same major version): `schemaVersion` field updated without backup
-- **Invalid documents**: CLI exits with an error message and guidance to review the schema changelog
-- **Future versions**: CLI rejects with a message suggesting a CLI update
-
-### Version Compatibility
-
-Within a major version (e.g., 1.x.x), we aim to maintain backward compatibility for documents that conform to the published schema for their version. Compatibility does not extend to undeclared or ad-hoc fields outside the schema definition; review the [schema changelog](schema/CHANGELOG.md) when upgrading between minor versions.
-
-## 🎯 Usage Examples
-
-> **Remember:** All commands below assume you're running them FROM your agent project directory, **not** from this repository.
-
-### What to Expect
-
-When you run an evaluation from your agent project directory, you'll see:
-```bash
-🚀 M365 Copilot Agent Evaluations CLI
-
-📂 Loading environment: dev
-🤖 Agent ID: T_my-agent.declarativeAgent
-📄 Using prompts file: ./evals/evals.json
-
-📊 Running evaluations...
-
-─────────────────────────────────────────────────────────────
-
-✓ Evals completed successfully!
-
-Results saved to: ./evals/2025-12-03_14-30-45.html
-```
-
-**Commands to run from your project root:**
-
-```bash
-# Auto-detect env file: .env.local first, then .env.dev (current dir, then env/ folder)
-runevals
-
-# Explicitly load env/.env.dev (layered on the .env.local base)
-runevals --env dev
-
-# Use specific prompts file in your project
-runevals --prompts-file ./evals/my-tests.json
-
-# Score responses already captured in a v1 eval document without calling the agent
-runevals --evaluate-only ./evals/captured-responses.json
-
-# Inline prompts (no file needed, useful for quick tests)
-runevals --prompts "What is Microsoft Graph?" --expected "Gateway to M365 data"
-
-# Interactive mode (enter prompts interactively)
-runevals --interactive
-
-# Canonical logging verbosity
-runevals --log-level debug
-runevals --log-level info
-runevals --log-level warning
-runevals --log-level error
-
-# Disable INFO/DEBUG console truncation or change its default 250-character limit
-RUNEVALS_LOG_TRUNCATE=false runevals --log-level info
-RUNEVALS_LOG_MAX_LENGTH=1000 runevals --log-level debug
-
-# Parallel prompt execution control
-runevals --concurrency 5 --prompts-file ./evals/evals.json
-runevals --concurrency 1000 --prompts-file ./evals/evals.json   # Python CLI clamps to 5
-
-# Multi-account sign-in: pick which cached account to use
-runevals --account user@contoso.com --prompts-file ./evals/evals.json
-
-# Custom output location in your project
-runevals --output ./reports/results.html
-```
-
-### Sample Scorecard
-
-![Sample Scorecard](docs/images/scorecard.png)
-
-> **⚠️ Debug log safety notice:** The `--log-level debug` option is opt-in and may include raw API payloads and response data in console output. Redaction is pattern-based (API keys, tokens, passwords, long mixed-case strings) and **will not catch arbitrary PII or custom credentials** embedded in prompts or responses. Do not share debug-level output publicly without manual review.
-
-> **Auth and SDK errors:** Warnings and errors from the Microsoft sign-in flow (MSAL) and Azure AI Evaluation SDK appear alongside the CLI's own diagnostics — useful when a run fails to authenticate or an evaluator can't reach Azure. Routine SDK chatter (token cache hits, HTTP retries) is hidden by default. If you're troubleshooting an auth or evaluator issue and want to see everything those libraries report, add `--log-level debug`.
-
-`RUNEVALS_LOG_TRUNCATE` accepts `true`/`false`, `1`/`0`, `yes`/`no`, or `on`/`off`. `RUNEVALS_LOG_MAX_LENGTH` must be a positive integer. These settings apply only to `INFO` and `DEBUG`; `WARNING` and `ERROR` messages are always printed in full. JSON output and generated reports retain the complete message.
-
-### Optional: Add Shortcuts to package.json
-
-You can add shortcuts (npm scripts) to your agent project's `package.json`:
-
-```json
-{
-  "scripts": {
-    "eval": "runevals",
-    "eval:local": "runevals --env local",
-    "eval:dev": "runevals --env dev"
-  }
-}
-```
-
-Then use shorter commands:
-
-```bash
-# Uses .env.local (ATK default)
-npm run eval
-
-# Uses env/.env.local
-npm run eval:local
-
-# Uses env/.env.dev
-npm run eval:dev
-```
-
-**Production note:** For production environments, use CI/CD pipelines instead of local `npm run` commands. See [CICD_CACHE_GUIDE.md](CICD_CACHE_GUIDE.md) for examples.
-
-## 📊 Output Formats
-
-Results are automatically saved to `./evals/YYYY-MM-DD_HH-MM-SS.html` with:
-- Per-prompt and per-turn evaluation scores from configured evaluators
-- Aggregate statistics across all evaluated items
-- Multi-turn thread summaries (turns passed/failed, overall status)
-- Custom metadata: any `extensions` object on an input item, thread, or turn is echoed **verbatim** onto the corresponding results item/thread/turn in the JSON and CSV outputs (not the HTML report), so harnesses can attribute results back to their own tags (e.g. `"extensions": { "com.microsoft.wiqd.evalCategory": "safety" }`). A document-level `metadata.extensions` object is echoed verbatim onto the results document's `metadata.extensions` (JSON).
-- First-class grouping: an optional `tags` (array of strings) field on an input item, thread, or turn is echoed **verbatim** onto the corresponding results item/thread/turn (JSON, CSV, and HTML).
-
-Other formats:
-```bash
-# JSON output
-runevals --output results.json
-
-# CSV output
-runevals --output results.csv
-```
-
-## 🔧 Command Reference
-
-```bash
-Options:
-  -V, --version                 output version number
-  --log-level [level]           log level: debug|info|warning|error (bare flag -> info)
-  --prompts <prompts...>        inline prompts to evaluate
-  --expected <responses...>     expected responses (with --prompts)
-  --prompts-file <file>         JSON file with prompts
-  --evaluate-only <file>        score captured responses from a v1 eval document
-  -o, --output <file>           output file (JSON, CSV, or HTML)
-  -i, --interactive             interactive prompt entry mode
-  --m365-agent-id <id>          override agent ID
-  --account <account>           user account (email/UPN) to sign in with when multiple are cached
-  --env <environment>           environment name; omit to auto-detect .env.local then .env.dev
-  --concurrency <number>        parallel workers for prompt processing (1-5)
-  --azure-ai-auth-mode <mode>   Azure AI auth: key | default-credential
-  --judge-backend <backend>     LLM judge backend: azure (default) | copilot
-  --no-judge-auto-fallback      disable auto-retry with model="auto" on rate limit (copilot)
-  --init-only                   just setup, don't run evals
-  -h, --help                    display help
-
-Cache Commands:
-  cache-info                    show cache statistics
-  cache-clear                   remove cached Python runtime
-  cache-dir                     print cache directory path
-```
-
-`--evaluate-only` is mutually exclusive with `--prompts`, `--prompts-file`,
-and `--interactive`. Every single-turn item and multi-turn turn must contain a
-`response`. Judge configuration is still required, but WorkIQ/A2A configuration
-and agent authentication are not used. Tool-call evaluators can reproduce live
-results when the captured document contains the sanitized
-`diagnostics.tool_calls` evidence emitted by a prior run. This evidence contains
-only plugin names, function names, and HTTP response statuses.
-Setting `EVALS_SUPPRESS_DIAGNOSTICS=true` omits this evidence, so a later
-evaluate-only run cannot reproduce tool-call verdicts and reports indeterminate
-tool evidence instead.
-
-## 🧑‍⚖️ LLM Judge Backend
-
-LLM-based evaluators (Relevance, Coherence, Groundedness, Similarity) are scored
-by a "judge" model. Two backends are available via `--judge-backend`:
-
-| Backend | Flag | Model is configured by | Notes |
-|---------|------|------------------------|-------|
-| **Azure OpenAI** (default) | `--judge-backend azure` | `AZURE_AI_MODEL_NAME` env var | Requires the `AZURE_AI_*` variables. |
-| **GitHub Copilot** | `--judge-backend github-copilot` | `GITHUB_COPILOT_JUDGE_MODEL` env var | No Azure OpenAI keys needed; authenticates with GitHub (`gh auth login` or `GITHUB_TOKEN`). |
-
-```bash
-# Use GitHub Copilot as the judge (no Azure OpenAI configuration required)
-runevals --judge-backend github-copilot --prompts-file ./evals/evals.json
-```
-
-### Choosing the Copilot judge model
-
-There is **no `--judge-model` flag** — the model is read from the
-`GITHUB_COPILOT_JUDGE_MODEL` environment variable, mirroring how the Azure backend reads
-`AZURE_AI_MODEL_NAME`.
-
-```bash
-GITHUB_COPILOT_JUDGE_MODEL="gpt-4.1"   # pin a specific model
-# (unset)                       # defaults to "auto"
-```
-
-- **Default is `"auto"`** — Copilot selects a model per request. The actual model
-  used is reported in the run output (e.g. `Judge: GitHub Copilot (model: auto → resolved: gpt-4.1-mini)`).
-- If you pin a model that your account can't access, the run **fails fast** at
-  startup with the list of available models (instead of erroring on every prompt).
-
-### Rate limits and auto-fallback
-
-By default, if a pinned model hits its rate limit, the judge automatically retries
-that evaluation with `model="auto"` so the run can finish. Pass
-`--no-judge-auto-fallback` to disable this and surface the rate-limit error instead.
-
-### GPT‑5.x and o‑series judge models (Microsoft Foundry cloud evaluation)
-
-GPT‑5.x and o‑series models can't be used with the default local evaluators. To
-use one of these models as the LLM judge, point the CLI at a **Microsoft Foundry
-project** — the LLM evaluators (Relevance, Coherence, Groundedness, Similarity)
-then run through Microsoft Foundry cloud evaluation instead.
-
-This is **automatic** and independent of `--judge-backend`:
-
-- Set `AZURE_AI_PROJECT_ENDPOINT` to your Foundry project endpoint
-  (`https://<account>.services.ai.azure.com/api/projects/<project>`).
-- When `AZURE_AI_PROJECT_ENDPOINT` **and** `AZURE_AI_MODEL_NAME` are set, the LLM
-  evaluators run in Foundry. The results and report format are unchanged.
-- **Leave `AZURE_AI_PROJECT_ENDPOINT` unset to use the local evaluator path** for
-  gpt‑4x models — no other configuration change needed.
-
-| `AZURE_AI_PROJECT_ENDPOINT` set? | Judge models supported |
-|:---:|-----------------|
-| ✅ yes | gpt‑5x / o‑series **and** gpt‑4x (via Microsoft Foundry) |
-| ❌ no | gpt‑4x only (local evaluators) |
-
-> **Note:** Microsoft Foundry has **deprecated the gpt‑4x / gpt‑4o judge models**,
-> with retirement dates through 2026. Plan to move your judge model to gpt‑5.x
-> (which requires the Foundry cloud evaluation path above). See the
-> [Foundry model retirement schedule](https://learn.microsoft.com/azure/foundry/openai/concepts/model-retirement-schedule).
-
-Requirements: a Foundry project with a chat‑capable model deployment, the
-**Azure AI Developer** role on the project, and Entra sign‑in
-(`az login` / `DefaultAzureCredential`). `AZURE_AI_API_KEY` is not used for this
-path. If you're not signed in or lack the required role, the run reports an
-authentication or permission error.
-
-> **Selecting a tenant:** If your Foundry project is in a different tenant than
-> your credential's default, set `AZURE_TENANT_ID` — see
-> [Selecting a tenant](#azure-openai-authentication-mode) above.
-
-See [Cloud evaluation with the Microsoft Foundry SDK](https://learn.microsoft.com/azure/foundry/how-to/develop/cloud-evaluation)
-and [RAG evaluators](https://learn.microsoft.com/azure/foundry/concepts/evaluation-evaluators/rag-evaluators).
-
-```bash
-# Point at a Foundry project to evaluate with a gpt‑5x / o‑series judge model
-AZURE_AI_PROJECT_ENDPOINT="https://myacct.services.ai.azure.com/api/projects/myproj"
-AZURE_AI_MODEL_NAME="gpt-5-mini"
-runevals --prompts-file ./evals/evals.json
-```
-
-## ❓ Troubleshooting
-
-### Pre-cache Python Environment (Optional)
-
-If you want to set up the Python environment ahead of time without running evaluations:
-
-```bash
-runevals --init-only
-```
-
-This is useful for:
-- Pre-warming the cache in CI/CD pipelines
-- Testing the setup without running evaluations
-- Troubleshooting installation issues
-
-### Cache Issues
-```bash
-# View cache info
-runevals cache-info
-
-# Clear and rebuild
-runevals cache-clear
-runevals --init-only --log-level debug
-```
-
-### Network/Proxy Issues
-```bash
-# Set proxy
-export HTTPS_PROXY=http://proxy:8080
-
-# Retry with verbose output
-runevals --init-only --log-level debug
-```
-
-### Permission Issues
-```bash
-# Check cache directory
-runevals cache-dir
-
-# Fix permissions (Unix/macOS)
-chmod -R u+w $(runevals cache-dir)
-```
-
-### Custom Python Runtime (PYTHON_PATH)
-
-If the automatic Python download fails (e.g., network restrictions, unsupported platform), provide your own Python installation:
-
-```bash
-# Windows
-set PYTHON_PATH=C:\Python313\python.exe
-
-# macOS/Linux
-export PYTHON_PATH=/usr/local/bin/python3.13
-```
-
-Python 3.13.x is the tested version. If a different version is found, you'll be prompted to confirm before proceeding. In CI/CD, a version mismatch fails automatically.
-
-### CI Exit Behavior
-
-A full WorkIQ evaluation exits with code `1` when none of its requested
-single-turn items or multi-turn turns receive a non-empty agent response.
-Configured output artifacts are written before the process exits. A mixed run
-with at least one non-empty response still exits successfully; evaluator score
-failures and evaluate-only runs do not trigger this job-level failure.
-
-### Capturing Run Output for Troubleshooting
-
-When a run fails and you need to troubleshoot (or hand output to support), the **recommended approach is to redirect the CLI's console output to a file** using your shell's standard redirection. The output redirection works consistently across shells and CI/CD.
-
-Run with `--log-level debug` and capture everything printed to the console into a plain-text log file. Redirect both stdout and stderr so the capture includes the human-readable results **and** the structured diagnostic log lines:
+Run against your configured agent, or add `--m365-agent-id` from the preceding section:
 
 ```powershell
-# Windows PowerShell — '*>' redirects all streams (stdout + stderr)
-runevals --log-level debug *> my_run.log
+runevals --judge-backend github-copilot --prompts-file evals\evals.json --output results.html
 ```
 
-```bash
-# macOS/Linux (bash/zsh) — merge stderr into stdout
-runevals --log-level debug > my_run.log 2>&1
+Use `.json` for automation or `.csv` for spreadsheets. Conversation turns share context.
+
+## Evaluators
+
+**Relevance** and **Coherence** run by default. Choose checks based on what you need to verify:
+
+| Evaluator | Type | Scale | Default | Description |
+|---|---|---|---|---|
+| Relevance | LLM-based | 1-5 | Yes | Assesses how well the response addresses the user's query. |
+| Coherence | LLM-based | 1-5 | Yes | Measures the logical and orderly presentation of ideas. |
+| Groundedness | LLM-based | 1-5 | No | Checks whether the response is supported by the provided grounding context. |
+| Similarity | LLM-based | 1-5 | No | Measures semantic similarity to `expected_response`. |
+| Citations | Count-based | >= 0 | No | Counts citation references. |
+| RetrievalQuery | Non-LLM | pass/fail | No | Checks whether Copilot translated user intent into the expected retrieval queries. |
+| RetrievalResult | Non-LLM | pass/fail | No | Checks whether expected resources appear in retrieval results. |
+| ExactMatch | String match | boolean | No | Checks whether the response matches `expected_response` exactly. |
+| PartialMatch | String match | 0.0-1.0 | No | Measures textual similarity to `expected_response`. |
+
+Per-item or per-turn evaluators extend document defaults. Set `evaluators_mode` to `replace` to run only the specified checks. For example, use this item in a dataset:
+
+```json
+{
+  "prompt": "What is the dinner allowance? Cite the policy.",
+  "context": "The travel policy allows dinner expenses up to $75 per person.",
+  "evaluators": {
+    "Groundedness": { "threshold": 4 },
+    "Citations": { "threshold": 1 }
+  },
+  "evaluators_mode": "replace"
+}
 ```
 
-Attach `my_run.log` to your support request. This captures the same output shown on the console, in a single file that is easy to share.
+Deterministic checks do not need an LLM judge.
 
-> **⚠️ Review before sharing:** `--log-level debug` may include raw API payloads and response data. Redaction is pattern-based (API keys, tokens, passwords, long mixed-case strings) and **will not catch arbitrary PII or custom credentials** in prompts or responses. Manually review the captured file before sending it to anyone.
+[Evaluator reference](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-evaluators) | [Custom evaluators](custom-evaluators/README.md)
 
-## 📚 Advanced Documentation
+## Judges
 
-- **[CI/CD Integration](./CICD_CACHE_GUIDE.md)** - GitHub Actions, Azure DevOps caching
-- **[Testing Guide](./.github/TESTING_GUIDE.md)** - Cross-platform testing procedures
-- **[Python CLI Guide](./PYTHON_CLI.md)** - Direct Python usage (without Node.js)
-- **[Local Development Setup](./DEV_SETUP.md)** - Setting up the repo for local development
+A judge scores LLM-based evaluators; it is separate from the agent being tested.
 
+| Judge | Setup |
+|---|---|
+| **GitHub Copilot (experimental)** | `--judge-backend github-copilot`; GitHub sign-in and Copilot access. No Azure OpenAI keys required. |
+| **Azure (default)** | `--judge-backend azure`; [configure Azure OpenAI or Microsoft Foundry](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-get-env-values). |
+
+GitHub Copilot selects a judge model automatically. To pin one your account can access:
+
+```powershell
+$env:GITHUB_COPILOT_JUDGE_MODEL = "<model-id>"
+runevals --judge-backend github-copilot --prompts-file evals\evals.json --output results.json
+```
+
+To use your configured Azure OpenAI judge:
+
+The CLI defaults to an API key (AZURE_AI_API_KEY). For keyless Microsoft Entra ID authentication, use  DefaultAzureCredential .
+
+Option A: API Key (default)
+
+Declare the following variables in an env file.
+
+```dotenv
+# .env.local.user (NOT checked in — secrets go here)
+AZURE_AI_OPENAI_ENDPOINT="<your-azure-openai-endpoint>"
+AZURE_AI_API_KEY="<your-api-key-from-azure-portal>"
+AZURE_AI_API_VERSION="2024-12-01-preview"  # default
+AZURE_AI_MODEL_NAME="gpt-4o-mini"           # recommended
+```
+
+Option B: DefaultAzureCredential (keyless)
+
+1. Sign in:  `az login --tenant <your-tenant-id>` 
+2. Assign **Cognitive Services OpenAI User** to your identity on the Azure OpenAI resource.
+3. Set `AZURE_AI_OPENAI_ENDPOINT`, `AZURE_AI_API_VERSION`, and `AZURE_AI_MODEL_NAME` as shown in Option A. Omit `AZURE_AI_API_KEY`, or explicitly select `--azure-ai-auth-mode default-credential`, then run the evaluation command below.
+
+You can also select the mode explicitly:
+
+# Explicit keyless authentication
+runevals --azure-ai-auth-mode default-credential
+
+# Explicit API key authentication
+runevals --azure-ai-auth-mode key
+
+Fallback behavior (auto-detect) - without the `--azure-ai-auth-mode`, the CLI defaults to AZURE_AI_API_KEY followed by DefaultAzureCredential.
+
+Note:  DefaultAzureCredential  supports multiple credential sources, including Azure CLI, PowerShell, environment variables, and managed identity. See [Azure Identity docs](https://learn.microsoft.com/en-us/python/api/azure-identity/azure.identity.defaultazurecredential?view=azure-python) for details.
+
+Selecting a tenant: Your Azure judge can be on a different tenant from your M365 Copilot extension. For cross-tenant access, configure the target tenant of your Azure tenant in your env file:
+
+# Target tenant configuration
+AZURE_TENANT_ID="<your-tenant-id>"
+
+Tip: For Azure CLI credentials, use  `az login --tenant <your-tenant-id>` . Tenant configuration varies by credential source.
+
+```powershell
+runevals --judge-backend azure --prompts-file evals\evals.json --output results.json
+```
+
+GitHub Copilot access, policies, and usage limits apply.
+
+## Environments and ATK
+
+Run from your project or evaluation folder. ATK projects already provide tenant and package values; keep their existing settings. For example, `env\.env.local`:
+
+```dotenv
+TEAMS_APP_TENANT_ID="<your-tenant-id>"
+M365_TITLE_ID="<your-package-title-id>"
+```
+
+Select the ATK agent and a named environment:
+
+```powershell
+runevals --env dev --judge-backend azure --prompts-file evals\evals.json --output results-dev.html
+```
+
+Without `--env`, the CLI discovers `.env.local`, then `.env.dev`, in the project root or `env` folder and loads the matching personal `.user` override. Explicit `--env <name>` layers `env\.env.<name>` over `.env.local` and `.env.local.user`.
+
+Keep credentials in ignored personal files, never checked-in configuration.
+
+## Advanced Usage
+
+Re-score captured responses and available diagnostics without executing prompts:
+
+```powershell
+runevals --judge-backend azure --evaluate-only evals\captured-responses.json --output rescored.html
+```
+
+Each item or turn must include a `response`. Configure the selected judge; Microsoft 365 execution authentication is not needed.
+
+For regression runs, increase parallelism from 1 up to 5:
+
+```powershell
+runevals --m365-agent-id "<your-agent-id>" --judge-backend github-copilot --prompts-file evals\evals.json --concurrency 3 --output results.json
+```
+
+For CI/CD, inspect evaluator scores and recorded errors, not just the process exit code. See [CI/CD guidance](CICD_CACHE_GUIDE.md).
+
+For non-ATK projects, use the following folder structure. Run from `my-evaluations` and pass `--prompts-file evals\agents.json`, or `--prompts-file evals\plugins.json` for V2 Preview. Only `prompts.json`, `evals.json`, and `tests.json` are auto-discovered. The CLI loads environment variables from the files below:
+
+```text
+my-evaluations\
+├── env\
+│   ├── .env.local          # Tenant and optional agent ID
+│   └── .env.local.user     # Secrets; exclude from source control
+├── evals\
+│   ├── plugins.json        # V2 Preview plugin dataset
+│   └── agents.json         # Agent evaluation dataset
+└── results\                # Generated reports
+```
+
+## Troubleshooting
+
+| Problem | Check |
+|---|---|
+| Installed the wrong release channel | Install `@microsoft/m365-copilot-eval@latest` for V1 or `@microsoft/m365-copilot-eval@preview` for V2 Preview. |
+| Agent ID is missing in V1 or CI | Supply `--m365-agent-id` or configure `M365_AGENT_ID`. |
+| A V2 Preview plugin scenario runs against an agent | Remove configured agent IDs from the shell and selected environment. |
+| Connector sign-in is requested | Complete connector authorization in Copilot first. |
+| Python download or Microsoft 365 sign-in fails | See the platform and runtime requirements in the [troubleshooting guide](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-troubleshooting). |
+
+Check available options:
+
+```powershell
+runevals --help
+```
+
+Capture additional diagnostics:
+
+```powershell
+runevals --judge-backend github-copilot --prompts "What can you help me with?" --log-level debug --output debug-results.json
+```
+
+**Reports and logs can contain sensitive content. Review and redact them before sharing; never commit credentials.**
+
+## Documentation and Feedback
+
+[Microsoft Learn](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-overview) | [Developer setup](DEV_SETUP.md) | [Testing guide](.github/TESTING_GUIDE.md)
+
+[Open an issue](https://github.com/microsoft/m365-copilot-eval/issues/new/choose) for bugs or suggestions. For bugs, include the CLI version, operating system, judge backend, reproduction steps, and expected versus actual behavior. For features, describe the scenario and desired outcome. Remove credentials, personal information, and confidential content before sharing examples.
 
 ## Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
-Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit [Contributor License Agreements](https://cla.opensource.microsoft.com).
+Contributions and suggestions are welcome. Most contributions require a [Contributor License Agreement](https://cla.opensource.microsoft.com); a bot will guide you when you submit a pull request.
 
-When you submit a pull request, a CLA bot will automatically determine whether you need to provide
-a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
-provided by the bot. You will only need to do this once across all repos using our CLA.
-
-This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
-contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+This project follows the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). See the [FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com).
 
 ## Trademarks
 
-This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft
-trademarks or logos is subject to and must follow
-[Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/legal/intellectualproperty/trademarks/usage/general).
-Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship.
-Any use of third-party trademarks or logos are subject to those third-party's policies.
+Use of Microsoft trademarks must follow [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/legal/intellectualproperty/trademarks/usage/general). Modified versions must not imply Microsoft sponsorship. Third-party trademarks are subject to their owners' policies.
 
 ## Terms of Use
 
-By using this tool, you agree to the [Microsoft Software License Terms](https://aka.ms/evaltoolterms).
-
-See [LICENSE](./LICENSE) for the full license text.
+By using this tool, you agree to the [Microsoft Software License Terms](https://aka.ms/evaltoolterms). See [LICENSE](LICENSE) for the full terms.
