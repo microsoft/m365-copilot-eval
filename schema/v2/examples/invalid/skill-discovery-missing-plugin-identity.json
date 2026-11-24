@@ -1,0 +1,19 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v2/eval-document.schema.json",
+  "schemaVersion": "2.0.0",
+  "items": [
+    {
+      "prompt": "how do i set up retries on an azure function?",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "executed"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

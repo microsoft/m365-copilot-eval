@@ -1,0 +1,217 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v2/eval-document.schema.json",
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "name": "Plugin skill discovery replay sample",
+    "description": "Captured plugin responses with their sanitized Developer Info skill funnel (diagnostics.skills). Replay offline with --evaluate-only to see each observed funnel state: executed, not_matched (enabled but not matched), matched_not_selected, selected_not_executed, not_enabled, and unknown when telemetry is missing.",
+    "tags": ["plugin", "skills", "evaluate-only"]
+  },
+  "items": [
+    {
+      "prompt": "how do i set up retries on an azure function? link the docs pls",
+      "response": "Azure Functions supports fixed-delay and exponential-backoff retry policies. Configure them per function in function.json or with the retry attributes. See 'Azure Functions error handling and retries' on Microsoft Learn.",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "executed",
+              "invocation_mode": "implicit"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace",
+      "diagnostics": {
+        "skills": {
+          "enabled": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" },
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "repository-research" }
+          ],
+          "matched": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" }
+          ],
+          "selected": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" }
+          ],
+          "executions": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research", "invocation_mode": "implicit", "outcome": "completed" }
+          ]
+        }
+      }
+    },
+    {
+      "prompt": "is there an official doc on scaling event hubs consumers",
+      "response": "You can scale Event Hubs consumers by adding partitions and running one processor instance per partition.",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace",
+      "diagnostics": {
+        "skills": {
+          "enabled": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" },
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "repository-research" }
+          ],
+          "matched": [],
+          "selected": [],
+          "executions": []
+        }
+      }
+    },
+    {
+      "prompt": "how is the vercel/next.js repo structured",
+      "response": "Next.js is a React framework. Its documentation describes the app and pages routers.",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "repository-research",
+              "expected_outcome": "executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace",
+      "diagnostics": {
+        "skills": {
+          "enabled": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" },
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "repository-research" }
+          ],
+          "matched": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" },
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "repository-research" }
+          ],
+          "selected": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" }
+          ],
+          "executions": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research", "invocation_mode": "implicit", "outcome": "completed" }
+          ]
+        }
+      }
+    },
+    {
+      "prompt": "walk me through the dotnet/aspire repo layout",
+      "response": "I couldn't load the repository details right now. Please try again.",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "repository-research",
+              "expected_outcome": "executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace",
+      "diagnostics": {
+        "skills": {
+          "enabled": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" },
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "repository-research" }
+          ],
+          "matched": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "repository-research" }
+          ],
+          "selected": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "repository-research" }
+          ],
+          "executions": []
+        }
+      }
+    },
+    {
+      "prompt": "write me a quick haiku about mondays",
+      "response": "Alarm sings too soon / coffee steams against the gray / the week stretches out",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "not_executed"
+            },
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "repository-research",
+              "expected_outcome": "not_executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace",
+      "diagnostics": {
+        "skills": {
+          "enabled": [
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "docs-research" },
+            { "plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b", "plugin_name": "OrbitSix TwinLens Research", "skill_name": "repository-research" }
+          ],
+          "matched": [],
+          "selected": [],
+          "executions": []
+        }
+      }
+    },
+    {
+      "prompt": "summarize the learn docs on azure functions retries",
+      "response": "Azure Functions can retry failed executions using a fixed delay or exponential backoff.",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace",
+      "diagnostics": {
+        "skills": {
+          "enabled": [],
+          "matched": [],
+          "selected": [],
+          "executions": []
+        }
+      }
+    },
+    {
+      "prompt": "find the learn page about durable functions orchestration versioning",
+      "response": "Durable Functions offers several orchestration versioning strategies; see 'Versioning in Durable Functions' on Microsoft Learn.",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace",
+      "diagnostics": {
+        "skills": {
+          "enabled": null,
+          "matched": null,
+          "selected": null,
+          "executions": null
+        }
+      }
+    }
+  ]
+}
