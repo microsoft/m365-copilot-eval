@@ -1,0 +1,117 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v2/eval-document.schema.json",
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "name": "Plugin skill discovery sample",
+    "description": "Checks that a Microsoft 365 Copilot plugin's skills run for the prompts they should handle and stay idle otherwise. The plugin bundles a docs-research skill (Microsoft Learn) and a repository-research skill (DeepWiki). Replace expected_plugin_id with your plugin's Microsoft 365 title id and run against Microsoft 365 Copilot with the enable_a2a_skills_developer_info flight on.",
+    "tags": ["plugin", "skills"]
+  },
+  "items": [
+    {
+      "prompt": "how do i set up retries on an azure function? link the docs pls",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "extend"
+    },
+    {
+      "prompt": "container apps vs aks for a small internal api - what does microsoft recommend?",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "executed",
+              "invocation_mode": "implicit"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace"
+    },
+    {
+      "prompt": "where does the app router live in vercel/next.js? trying to find my way around that repo",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_name": "OrbitSix TwinLens Research",
+              "expected_skill_name": "repository-research",
+              "expected_outcome": "executed"
+            },
+            {
+              "expected_plugin_name": "OrbitSix TwinLens Research",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "not_executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace"
+    },
+    {
+      "prompt": "write me a quick haiku about mondays",
+      "evaluators": {
+        "SkillDiscovery": {
+          "skills": [
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "docs-research",
+              "expected_outcome": "not_executed"
+            },
+            {
+              "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+              "expected_skill_name": "repository-research",
+              "expected_outcome": "not_executed"
+            }
+          ]
+        }
+      },
+      "evaluators_mode": "replace"
+    },
+    {
+      "name": "Docs question, then a repo follow-up",
+      "turns": [
+        {
+          "prompt": "what do the learn docs say about the fan out / fan in pattern in durable functions",
+          "evaluators": {
+            "SkillDiscovery": {
+              "skills": [
+                {
+                  "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+                  "expected_skill_name": "docs-research",
+                  "expected_outcome": "executed"
+                }
+              ]
+            }
+          },
+          "evaluators_mode": "replace"
+        },
+        {
+          "prompt": "cool, where is that implemented in the Azure/azure-functions-durable-extension repo?",
+          "evaluators": {
+            "SkillDiscovery": {
+              "skills": [
+                {
+                  "expected_plugin_id": "T_397c2db6-be4b-743f-002f-9fd33f22101b",
+                  "expected_skill_name": "repository-research",
+                  "expected_outcome": "executed"
+                }
+              ]
+            }
+          },
+          "evaluators_mode": "replace"
+        }
+      ]
+    }
+  ]
+}

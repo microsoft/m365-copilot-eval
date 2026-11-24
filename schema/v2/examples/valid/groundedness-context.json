@@ -1,0 +1,38 @@
+{
+  "$schema": "https://raw.githubusercontent.com/microsoft/m365-copilot-eval/refs/heads/main/schema/v2/eval-document.schema.json",
+  "schemaVersion": "2.0.0",
+  "metadata": {
+    "name": "Groundedness evidence and reference-answer fallback",
+    "description": "Self-contained fictional policy examples for Groundedness and Similarity."
+  },
+  "default_evaluators": {
+    "Groundedness": { "threshold": 3 },
+    "Similarity": { "threshold": 3 }
+  },
+  "items": [
+    {
+      "prompt": "Use only this fictional policy: approved equipment is reimbursable up to $500 per employee per calendar year, requires manager approval before purchase, and must be claimed within 60 days. What is the annual limit?",
+      "expected_response": "The annual equipment reimbursement limit is $500 per employee.",
+      "context": "Approved equipment is reimbursable up to $500 per employee per calendar year. Manager approval is required before purchase. Claims must be submitted within 60 days."
+    },
+    {
+      "prompt": "Use only this fictional policy: dinner expenses are covered up to $75 per person. What is the dinner allowance?",
+      "expected_response": "Dinner expenses are covered up to $75 per person."
+    },
+    {
+      "name": "Per-turn grounding evidence",
+      "turns": [
+        {
+          "prompt": "Use only this fictional policy: equipment purchases require manager approval before purchase. Who must approve the purchase?",
+          "expected_response": "The employee's manager must approve the purchase.",
+          "context": "Equipment purchases require manager approval before purchase."
+        },
+        {
+          "prompt": "Use only this additional fictional policy: equipment reimbursement claims must be submitted within 60 days of purchase. When is a claim due?",
+          "expected_response": "A claim must be submitted within 60 days of purchase.",
+          "context": "Equipment reimbursement claims must be submitted within 60 days of purchase."
+        }
+      ]
+    }
+  ]
+}

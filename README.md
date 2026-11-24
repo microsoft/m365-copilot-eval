@@ -4,7 +4,7 @@
 
 Evaluate Microsoft 365 Copilot agents and plugins (in V2 Preview). Run repeatable tests and review results in HTML, JSON, or CSV.
 
-> **V2 preview.** The default execution behavior changes from agent selection to Microsoft 365 Copilot. 
+> **V2 preview.** The default execution behavior changes from agent selection to Microsoft 365 Copilot.
 > Read the [v2 upgrade guide](./docs/upgrade-to-v2.md) before upgrading.
 > Preview changes are marked with Preview tag at the beginning of the section.
 
@@ -15,9 +15,9 @@ Evaluate Microsoft 365 Copilot agents and plugins (in V2 Preview). Run repeatabl
 ## Quick Start
 
 You need the following pre-requisites -
-1. **[Node.js 24.12.0+](https://nodejs.org/en/download)**, 
-2. a **Microsoft 365 Copilot license**, your **tenant ID**, and 
-3. [tenant admin approval for the WorkIQ Client App](https://github.com/microsoft/work-iq/blob/main/ADMIN-INSTRUCTIONS.md). 
+1. **[Node.js 24.12.0+](https://nodejs.org/en/download)**,
+2. a **Microsoft 365 Copilot license**, your **tenant ID**, and
+3. [tenant admin approval for the WorkIQ Client App](https://github.com/microsoft/work-iq/blob/main/ADMIN-INSTRUCTIONS.md).
 4. Python 3.13 is downloaded and cached automatically. You do not need to clone this repository.
 
 The below example evaluates a deployed agent using the **GitHub Copilot judge**, which requires [GitHub CLI](https://cli.github.com/) and GitHub Copilot access. Azure is also supported; see [Judges](#judges).
@@ -64,7 +64,7 @@ For example, save this as `evals\plugins.json`. Replace the prompt and consent n
 
 ```json
 {
-  "schemaVersion": "1.11.0",
+  "schemaVersion": "2.0.0",
   "default_allowed_tools": ["ContosoCatalog_get_product"],
   "default_evaluators": {
     "Relevance": {},
@@ -86,7 +86,7 @@ runevals --judge-backend github-copilot --prompts-file evals\plugins.json --outp
 
 Relevance and Coherence assess response quality; these scores don't prove that a plugin was invoked.
 
-**Safe execution:** Use read-only scenarios first and complete connector sign-in in Copilot. `default_allowed_tools` configures consent at document level; `allowed_tools` can be set per prompt. See the [allowlist example](schema/v1/examples/valid/allowed-tools.json).
+**Safe execution:** Use read-only scenarios first. Complete connector sign-in in Copilot before unattended runs, or use the [interactive sign-in controls](#downstream-tool-sign-in). `default_allowed_tools` configures consent at document level; `allowed_tools` can be set per prompt. Allowing consent does not sign you in to the service. See the [allowlist example](schema/v1/examples/valid/allowed-tools.json).
 
 Installing either tag replaces the global `runevals` command. To return to V1, reinstall `@microsoft/m365-copilot-eval@latest`.
 
@@ -103,6 +103,24 @@ runevals --m365-agent-id "<your-agent-id>" --judge-backend github-copilot --prom
 ```powershell
 runevals --judge-backend github-copilot --prompts "What can you help me with?" --output agent-results.html
 ```
+
+### Downstream tool sign-in
+
+When an agent or Microsoft 365 Copilot pauses to sign in to a downstream service, `runevals` displays a redacted prompt preview and the sign-in URL in your terminal. Open the URL yourself and complete sign-in; the CLI does not open a browser or detect when sign-in finishes.
+
+| Choice | Behavior |
+|--------|----------|
+| `C` / `Continue` | Confirm sign-in is complete and resume the paused task. |
+| `E` / `Extend` | Start another five-minute window. |
+| `S` / `Skip` | Fail the affected acquisition with `agentAuthenticationError` without resuming or retrying its prompt. |
+
+Choices are case-insensitive and require Enter. Blank or invalid input does not confirm sign-in or restart the timer. Timeout, EOF, or a noninteractive terminal also produces `agentAuthenticationError`. Both stdin and stdout must be terminals; piping or redirecting stdout disables interactive sign-in. Auth failure in a multi-turn conversation skips its remaining turns, while other items continue. For unattended runs, sign in to the service in Microsoft 365 Copilot chat beforehand; `allowed_tools` cannot automate authentication. The five-minute sign-in window is separate from the HTTP request timeout. Auth resume requires A2A 1.0; auth pauses under the legacy `0.3` protocol fail with `agentAuthenticationError`.
+
+While any sign-in dialog is pending, new prompts pause, including later turns in already-started conversations. In-flight requests can finish, but structured console logs buffer run-wide and replay in arrival order after the last pending dialog resolves. Persistent diagnostics keep their original timestamps and redaction; arbitrary direct stdout/stderr writes are not buffered. Concurrent auth requests display one dialog at a time, each with its own five-minute window and explicit confirmation. Other work can continue after all pending dialogs resolve.
+
+Ctrl+C cancels the run, including active and queued sign-in dialogs, and replays buffered logs. Queued evaluations do not start; already-running HTTP requests remain subject to their existing timeout.
+
+Resume preserves the paused task and conversation context rather than sending the original prompt again. Selecting Continue only confirms your decision; it does not guarantee successful tool execution. ToolCallSelection and ToolCallExecution still evaluate the available Developer Info evidence after the response.
 
 ## Datasets and Results
 
@@ -180,7 +198,133 @@ Per-item or per-turn evaluators extend document defaults. Set `evaluators_mode` 
 
 Deterministic checks do not need an LLM judge.
 
+For **Groundedness**, optional item-level or per-turn `context` supplies the
+supporting evidence. If it is absent, empty, or whitespace-only, Groundedness
+falls back to `expected_response`, preserving existing datasets. **Similarity**
+always compares against `expected_response`, even when `context` is present.
+Use `expected_response` for the ideal answer and `context` for the source facts
+that may support additional details. Dataset `context` is evaluator input, not
+automatically information sent to the agent.
+
+The [V2 grounding example](schema/v2/examples/valid/groundedness-context.json)
+includes explicit evidence, an omitted-context fallback, and per-turn evidence.
+Its fictional policy is included in each prompt so it is self-contained.
+
 [Evaluator reference](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-evaluators) | [Custom evaluators](custom-evaluators/README.md)
+
+### LLMRubric: plain-language acceptance criteria (V2 Preview)
+
+`LLMRubric` is an opt-in built-in for schema `2.0.0`: no custom Python or Prompty files are needed.
+Copy [`llm-rubric.json`](schema/v2/examples/valid/llm-rubric.json), edit its
+assertions and captured responses, then run from the repository root with V2 Preview:
+
+```powershell
+Copy-Item .\schema\v2\examples\valid\llm-rubric.json .\my-rubric.json
+runevals --evaluate-only .\my-rubric.json --judge-backend github-copilot --output .\rubric.html
+# Or use your normally configured Azure OpenAI inline judge:
+runevals --evaluate-only .\my-rubric.json --judge-backend azure --output .\rubric.json
+```
+
+Normal judge authentication is still required: use the existing GitHub Copilot
+sign-in, or configure `AZURE_AI_OPENAI_ENDPOINT`, `AZURE_AI_API_VERSION`,
+`AZURE_AI_MODEL_NAME` and your supported Azure key/identity authentication.
+Evaluate-only needs no agent ID, tenant, WorkIQ/A2A credentials, or agent provisioning.
+Live runs use the same evaluator with `--prompts-file` instead of `--evaluate-only`.
+LLMRubric uses the selected shared judge client. With Azure selected, it runs
+through the direct Azure OpenAI connection even when `AZURE_AI_PROJECT_ENDPOINT`
+routes other built-in metrics to Foundry cloud evaluation. You do not need to
+unset that project endpoint. Foundry configuration alone does not supply the
+direct connection: missing settings produce an unscored
+`evaluatorConfigurationError`, while sibling evaluators can still complete.
+With `github-copilot` selected, ambient Azure/Foundry settings do not change
+the rubric's provider.
+
+Configuration lives directly under `default_evaluators.LLMRubric` or an
+item/turn's `evaluators.LLMRubric`, with no `options` wrapper:
+
+```json
+{
+  "LLMRubric": {
+    "assertions": [
+      {"text": "The answer names the review owner."},
+      {"text": "The answer includes a source.", "weight": 2, "tags": ["sources"]}
+    ]
+  }
+}
+```
+
+| Option | Behavior |
+|---|---|
+| `assertions` | Required ordered array of 1-100 objects; each requires nonblank `text`. No arbitrary text-length cap; backend context limits surface as errors. |
+| `threshold` | Number in [0,1], default **1.0**: every assertion must receive full credit. Lower it explicitly to permit omissions/partial credit. |
+| `weight` | Integer **1-10**, default **5**. A relative-importance slider, not a rating or percentage: 1-4 reduce influence; 6-10 increase it. |
+| `tags` | Optional string array for reporting only; preserved verbatim, separate from prompt tags, never sent to the judge. |
+| `anchors` | Optional three ordered `{ "rating": 0/1/2, "description": "..." }` objects. Each description is nonblank and at most 500 trimmed characters. Ratings normalize to 0, 0.5, 1; without anchors ratings are binary 0/1. |
+
+The score is `sum(weight * normalized_rating) / sum(weights)`. Equal weights
+mean equal influence; `[3,1]` and `[6,2]` give the same result. Lower weights
+cannot bypass the default all-full-credit threshold. The canonical example's
+ratings `[1,0,2]` score 0.8 (pass); `[1,0,1]` score 0.7 (fail) at threshold 0.75.
+
+Existing extend/replace rules apply. Overriding `LLMRubric` replaces the
+**whole rubric**, never merges assertions; omitted options reset to defaults.
+`replace` can remove the evaluator entirely. Unknown fields, decimal/exponent
+integer forms (`5.0`, `5e0`), booleans, and invalid anchors fail CLI validation.
+Editor JSON Schema validation cannot distinguish integer-token spelling.
+Thresholds use already-parsed decimal values; verdicts compare exact weighted
+scores before eight-decimal half-even persistence rounding.
+
+The judge sees only the current prompt, final answer, assertion text, and anchors.
+It returns ordered ratings and short reasons; malformed output becomes an
+unscored error, not zero. Instructions inside evaluated content are treated as
+untrusted, but this is not a guarantee of prompt-injection immunity.
+See the [scorecard guide](docs/scorecard-guide.md#llmrubric-results) for aggregate
+results, native assertion breakdowns, and JSON/CSV details. Changing a rubric changes
+what its scores measure; no cross-rubric trend identity is provided.
+
+### Preview: Tool call input assertions
+
+Requires schema `2.0.0`.
+
+`ToolCallExecution` optionally checks `arguments` (MCP or OpenAPI GET) or
+`request_body.json` (OpenAPI POST JSON). Add it under `evaluators` or
+`default_evaluators`:
+
+```json
+{
+  "ToolCallExecution": {
+    "calls": [
+      {
+        "tool": {
+          "plugin_id": "T_<plugin-package-id>",
+          "toolset_id": "<action-or-connector-id>",
+          "function_name": "microsoft_docs_search"
+        },
+        "arguments": {
+          "$.query": { "exact": "Build declarative agents" }
+        }
+      }
+    ]
+  }
+}
+```
+
+Use exact plugin/toolset/function identities from Developer Info. Each expected call
+needs a distinct HTTP 2xx execution matching both the tool and its inputs.
+Omit input assertions to keep existing identity/status-only behavior.
+
+Paths support `$`, `$.name`, `$["member.name"]`, and nonnegative array indexes
+such as `$.items[0]`, not wildcards or filters. Each path takes one matcher:
+`exact`, a nonempty `any_of` array, or a nonempty object `subset`.
+JSON types are strict (`"1"` differs from `1`). `optional: true` permits an
+absent path, not missing input evidence; present values are still checked.
+Missing or invalid evidence produces `toolCallEvidenceIndeterminate` when it
+could change the verdict.
+
+Captured inputs are retained for `--evaluate-only` re-evaluation without agent
+calls. **Inputs and mismatch reasons may contain sensitive values.**
+`EVALS_SUPPRESS_DIAGNOSTICS=true` omits retained diagnostics and input values
+from mismatch reasons; it does not redact prompts, responses, or evaluator options.
 
 ## Judges
 
@@ -243,6 +387,11 @@ Tip: For Azure CLI credentials, use  `az login --tenant <your-tenant-id>` . Te
 runevals --judge-backend azure --prompts-file evals\evals.json --output results.json
 ```
 
+Foundry cloud evaluation scores only Relevance, Coherence, Groundedness, and
+Similarity. LLMRubric, custom Prompty evaluators, and `retrievalExtract_contains`
+assertions still require a direct Azure OpenAI connection or
+`--judge-backend github-copilot`, even when Foundry is configured.
+
 GitHub Copilot access, policies, and usage limits apply.
 
 ## Environments and ATK
@@ -302,8 +451,9 @@ my-evaluations\
 | Installed the wrong release channel | Install `@microsoft/m365-copilot-eval@latest` for V1 or `@microsoft/m365-copilot-eval@preview` for V2 Preview. |
 | Agent ID is missing in V1 or CI | Supply `--m365-agent-id` or configure `M365_AGENT_ID`. |
 | A V2 Preview plugin scenario runs against an agent | Remove configured agent IDs from the shell and selected environment. |
-| Connector sign-in is requested | Complete connector authorization in Copilot first. |
+| Connector sign-in is requested | Follow the [interactive sign-in controls](#downstream-tool-sign-in), or complete connector authorization in Copilot before an unattended run. |
 | Python download or Microsoft 365 sign-in fails | See the platform and runtime requirements in the [troubleshooting guide](https://learn.microsoft.com/en-us/microsoft-365/copilot/extensibility/evaluations-cli-troubleshooting). |
+| Running on Windows on Arm | The CLI runs x64 Python through Windows 11's built-in x64 emulation because some dependencies don't publish Windows ARM64 wheels. Windows 10 on Arm can't emulate x64 and isn't supported. |
 
 Check available options:
 

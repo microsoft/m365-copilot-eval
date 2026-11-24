@@ -70,7 +70,7 @@
         "prompt":            { "type": "string", "minLength": 1, "description": "The input prompt to evaluate" },
         "expected_response": { "type": "string", "description": "Expected or ideal response for comparison during evaluation" },
         "response":          { "type": "string", "description": "Actual response from the agent" },
-        "context":           { "type": "string", "description": "Additional context for grounding evaluation" },
+        "context":           { "type": "string", "description": "Optional grounding/source material for evaluation, passed verbatim to custom evaluators that consume context. Built-in Groundedness uses nonblank context; when absent, empty, or whitespace-only, it falls back to expected_response. This field is not automatically sent to the agent." },
         "evaluators":        { "$ref": "#/$defs/EvaluatorMap", "description": "Per-prompt evaluator overrides" },
         "evaluators_mode":   { "type": "string", "enum": ["extend", "replace"], "default": "extend", "description": "How per-prompt evaluators combine with defaults" },
         "allowed_tools":      { "$ref": "#/$defs/AllowedToolList", "description": "Per-prompt allowlist override. Additive by default: see allowed_tools_mode." },
@@ -117,7 +117,7 @@
         "prompt":            { "type": "string", "minLength": 1, "description": "The user message for this turn" },
         "expected_response": { "type": "string", "description": "Expected agent response for this turn" },
         "response":          { "type": "string", "description": "Actual agent response" },
-        "context":           { "type": "string", "description": "Additional context for grounding evaluation" },
+        "context":           { "type": "string", "description": "Optional evidence for this turn's Groundedness evaluation. When absent, empty, or whitespace-only, Groundedness uses this turn's expected_response. Similarity always uses expected_response. This field is not automatically sent to the agent." },
         "evaluators":        { "$ref": "#/$defs/EvaluatorMap", "description": "Per-turn evaluator overrides" },
         "evaluators_mode":   { "type": "string", "enum": ["extend", "replace"], "default": "extend", "description": "How per-turn evaluators combine with defaults" },
         "allowed_tools":      { "$ref": "#/$defs/AllowedToolList", "description": "Per-turn allowlist override. Additive by default: see allowed_tools_mode." },
@@ -232,7 +232,39 @@
               "description": "A safe, replayable explanation of why no authoritative Developer Info evidence was available."
             }
           }
+        },
+        "skills": {
+          "type": "object",
+          "description": "Sanitized Developer Info skill-funnel evidence used to replay SkillDiscovery in evaluate-only mode. Null stages mean the evidence was unavailable; an empty array is an authoritative observation.",
+          "additionalProperties": false,
+          "properties": {
+            "enabled":    { "type": ["array", "null"], "items": { "$ref": "#/$defs/SkillDiagnosticIdentity" } },
+            "matched":    { "type": ["array", "null"], "items": { "$ref": "#/$defs/SkillDiagnosticIdentity" } },
+            "selected":   { "type": ["array", "null"], "items": { "$ref": "#/$defs/SkillDiagnosticIdentity" } },
+            "executions": { "type": ["array", "null"], "items": { "$ref": "#/$defs/SkillDiagnosticExecution" } },
+            "evidence_error": { "type": "string" }
+          }
         }
+      }
+    },
+    "SkillDiagnosticIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "plugin_id":   { "type": ["string", "null"], "description": "Developer Info skill plugin.titleId when reported, otherwise plugin.id (skill plugins report their Microsoft 365 title ID there)." },
+        "plugin_name": { "type": ["string", "null"] },
+        "skill_name":  { "type": ["string", "null"] }
+      }
+    },
+    "SkillDiagnosticExecution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "plugin_id":       { "type": ["string", "null"] },
+        "plugin_name":     { "type": ["string", "null"] },
+        "skill_name":      { "type": ["string", "null"] },
+        "invocation_mode": { "type": ["string", "null"] },
+        "outcome":         { "type": ["string", "null"] }
       }
     },
     "ToolCallDiagnosticIdentity": {
@@ -262,7 +294,51 @@
         "plugin_id": { "type": ["string", "null"] },
         "toolset_id": { "type": ["string", "null"] },
         "function_name": { "type": ["string", "null"] },
-        "response_status": { "type": ["integer", "null"] }
+        "response_status": { "type": ["integer", "null"] },
+        "inputs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["arguments", "request_body"],
+          "description": "Complete captured argument objects and POST JSON text, independent of the original assertions.",
+          "properties": {
+            "arguments": {
+              "oneOf": [
+                { "$ref": "#/$defs/ToolCallInputSourceUnknown" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["state", "source", "value"],
+                  "properties": {
+                    "state": { "const": "available" },
+                    "source": { "enum": ["requestArguments", "mcp_tool_arguments"] },
+                    "value": {
+                      "type": "object",
+                      "description": "Captured arguments; nested JSON usability is checked during evaluation."
+                    }
+                  }
+                }
+              ]
+            },
+            "request_body": {
+              "oneOf": [
+                { "$ref": "#/$defs/ToolCallInputSourceUnknown" },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["state", "source", "json_text"],
+                  "properties": {
+                    "state": { "const": "available" },
+                    "source": { "const": "requestPayload" },
+                    "json_text": {
+                      "type": "string",
+                      "description": "Original POST payload text, decoded strictly when JSON-body assertions are evaluated."
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        }
       }
     },
     "ScoreCollection": {
@@ -280,7 +356,9 @@
         "retrievalQuery":  { "$ref": "#/$defs/RetrievalQueryScore",  "description": "RetrievalQuery evaluation result or errored entry" },
         "retrievalResult": { "$ref": "#/$defs/RetrievalResultScore", "description": "RetrievalResult evaluation result or errored entry" },
         "toolCallSelection": { "$ref": "#/$defs/ToolCallEvaluatorScore", "description": "ToolCallSelection deterministic result" },
-        "toolCallExecution": { "$ref": "#/$defs/ToolCallEvaluatorScore", "description": "ToolCallExecution deterministic result" }
+        "toolCallExecution": { "$ref": "#/$defs/ToolCallEvaluatorScore", "description": "ToolCallExecution deterministic result" },
+        "llmRubric":       { "$ref": "#/$defs/LLMRubricScore", "description": "LLMRubric weighted assertion score (0-1) or errored entry" },
+        "skillDiscovery": { "$ref": "#/$defs/ToolCallEvaluatorScore", "description": "SkillDiscovery deterministic result (Microsoft 365 Copilot plugin runs). Valid results carry per-expectation funnel `details`." }
       }
     },
     "ToolCallEvaluatorScore": {
@@ -469,8 +547,8 @@
         "result": { "type": "string", "const": "error", "description": "Always 'error' for this variant." },
         "code": {
           "type": "string",
-          "enum": ["emptyAgentResponse", "judgeOutputUnparseable", "judgeAuthenticationError", "judgeRateLimited", "judgeTimeout", "evaluatorConfigurationError", "evaluatorLoadError", "invalidEvaluatorResult", "evaluatorError", "toolCallEvidenceIndeterminate"],
-          "description": "Optional machine-readable failure category. One of: 'emptyAgentResponse' (agent returned empty/None/whitespace), 'judgeOutputUnparseable' (LLM judge returned empty/non-JSON output), 'judgeAuthenticationError' (authentication to the Azure AI/OpenAI judge backend failed), 'judgeRateLimited' (the LLM judge backend was throttled / rate-limited), 'judgeTimeout' (the LLM judge call or Foundry evaluation timed out), 'evaluatorConfigurationError' (the evaluator was misconfigured for the run, e.g. a custom LLM evaluator with the Copilot SDK judge backend and no Azure OpenAI credentials), 'evaluatorLoadError' (a custom evaluator failed to import/resolve), 'invalidEvaluatorResult' (a custom evaluator returned a malformed result: not a dict, missing/non-numeric/out-of-range score), 'evaluatorError' (any other uncaught evaluator failure), 'toolCallEvidenceIndeterminate' (the available Developer Info evidence could not determine a tool-call verdict)."
+          "enum": ["emptyAgentResponse", "judgeOutputUnparseable", "judgeAuthenticationError", "judgeRateLimited", "judgeTimeout", "evaluatorConfigurationError", "evaluatorLoadError", "invalidEvaluatorResult", "evaluatorError", "toolCallEvidenceIndeterminate", "skillEvidenceIndeterminate"],
+          "description": "Optional machine-readable failure category. One of: 'emptyAgentResponse' (agent returned empty/None/whitespace), 'judgeOutputUnparseable' (LLM judge returned empty/non-JSON output), 'judgeAuthenticationError' (authentication to the Azure AI/OpenAI judge backend failed), 'judgeRateLimited' (the LLM judge backend was throttled / rate-limited), 'judgeTimeout' (the LLM judge call or Foundry evaluation timed out), 'evaluatorConfigurationError' (the evaluator was misconfigured for the run, e.g. a custom LLM evaluator with the Copilot SDK judge backend and no Azure OpenAI credentials), 'evaluatorLoadError' (a custom evaluator failed to import/resolve), 'invalidEvaluatorResult' (a custom evaluator returned a malformed result: not a dict, missing/non-numeric/out-of-range score), 'evaluatorError' (any other uncaught evaluator failure), 'toolCallEvidenceIndeterminate' (the available Developer Info evidence could not determine a tool-call verdict), 'skillEvidenceIndeterminate' (the available Developer Info evidence could not determine a skill-discovery verdict)."
         },
         "error":  { "type": "string", "minLength": 1, "description": "Error message describing why the evaluator did not produce a result." }
       }
@@ -532,8 +610,106 @@
         "RetrievalQuery":  { "$ref": "#/$defs/RetrievalQueryOptions" },
         "RetrievalResult": { "$ref": "#/$defs/RetrievalResultOptions" },
         "ToolCallSelection": { "$ref": "#/$defs/ToolCallSelectionOptions" },
-        "ToolCallExecution": { "$ref": "#/$defs/ToolCallExecutionOptions" }
+        "ToolCallExecution": { "$ref": "#/$defs/ToolCallExecutionOptions" },
+        "LLMRubric":       { "$ref": "#/$defs/LLMRubricOptions" },
+        "SkillDiscovery": { "$ref": "#/$defs/SkillDiscoveryOptions" }
       }
+    },
+    "LLMRubricOptions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assertions"],
+      "properties": {
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1, "default": 1.0 },
+        "assertions": {
+          "type": "array", "minItems": 1, "maxItems": 100,
+          "items": { "$ref": "#/$defs/LLMRubricAssertion" }
+        }
+      }
+    },
+    "LLMRubricWeight": {
+      "type": "integer", "minimum": 1, "maximum": 10, "default": 5,
+      "description": "Relative importance, not a quality rating. CLI requires integer tokens (5, not 5.0)."
+    },
+    "LLMRubricText": { "type": "string", "pattern": "\\S" },
+    "LLMRubricReason": { "type": "string", "minLength": 1, "maxLength": 500, "pattern": "\\S" },
+    "LLMRubricAnchors": {
+      "type": "array", "minItems": 3, "maxItems": 3,
+      "prefixItems": [
+        { "allOf": [{ "$ref": "#/$defs/LLMRubricAnchor" }, { "properties": { "rating": { "const": 0 } } }] },
+        { "allOf": [{ "$ref": "#/$defs/LLMRubricAnchor" }, { "properties": { "rating": { "const": 1 } } }] },
+        { "allOf": [{ "$ref": "#/$defs/LLMRubricAnchor" }, { "properties": { "rating": { "const": 2 } } }] }
+      ]
+    },
+    "LLMRubricAnchor": {
+      "type": "object", "additionalProperties": false,
+      "required": ["rating", "description"],
+      "properties": {
+        "rating": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "description": { "type": "string", "pattern": "^\\s*\\S(?:[\\s\\S]{0,498}\\S)?\\s*$" }
+      }
+    },
+    "LLMRubricAssertion": {
+      "type": "object", "additionalProperties": false, "required": ["text"],
+      "properties": {
+        "text": { "$ref": "#/$defs/LLMRubricText" },
+        "weight": { "$ref": "#/$defs/LLMRubricWeight" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "anchors": { "$ref": "#/$defs/LLMRubricAnchors" }
+      }
+    },
+    "LLMRubricScoredAssertion": {
+      "type": "object", "additionalProperties": false,
+      "required": ["text", "weight", "rating", "score", "reason"],
+      "properties": {
+        "text": { "$ref": "#/$defs/LLMRubricText" },
+        "weight": { "$ref": "#/$defs/LLMRubricWeight" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "anchors": { "$ref": "#/$defs/LLMRubricAnchors" },
+        "rating": { "type": "integer", "minimum": 0, "maximum": 2 },
+        "score": { "type": "number", "enum": [0, 0.5, 1] },
+        "reason": { "$ref": "#/$defs/LLMRubricReason" }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["anchors"] },
+          "then": {
+            "allOf": [
+              { "if": { "properties": { "rating": { "const": 0 } } }, "then": { "properties": { "score": { "const": 0 } } } },
+              { "if": { "properties": { "rating": { "const": 1 } } }, "then": { "properties": { "score": { "const": 0.5 } } } },
+              { "if": { "properties": { "rating": { "const": 2 } } }, "then": { "properties": { "score": { "const": 1 } } } }
+            ]
+          },
+          "else": {
+            "properties": { "rating": { "maximum": 1 } },
+            "allOf": [
+              { "if": { "properties": { "rating": { "const": 0 } } }, "then": { "properties": { "score": { "const": 0 } } } },
+              { "if": { "properties": { "rating": { "const": 1 } } }, "then": { "properties": { "score": { "const": 1 } } } }
+            ]
+          }
+        }
+      ]
+    },
+    "LLMRubricScore": {
+      "oneOf": [
+        { "$ref": "#/$defs/LLMRubricScoreValid" },
+        { "$ref": "#/$defs/ErroredScore" }
+      ]
+    },
+    "LLMRubricScoreValid": {
+      "type": "object", "additionalProperties": false,
+      "required": ["score", "threshold", "threshold_met", "result", "reason", "assertions"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "threshold": { "type": "number", "minimum": 0, "maximum": 1 },
+        "threshold_met": { "type": "boolean" },
+        "result": { "enum": ["pass", "fail"] },
+        "reason": { "type": "string", "pattern": "\\S" },
+        "assertions": { "type": "array", "minItems": 1, "maxItems": 100, "items": { "$ref": "#/$defs/LLMRubricScoredAssertion" } }
+      },
+      "if": { "properties": { "threshold_met": { "const": true } } },
+      "then": { "properties": { "result": { "const": "pass" } } },
+      "else": { "properties": { "result": { "const": "fail" } } }
     },
     "CustomEvaluatorOptions": {
       "type": "object",
@@ -611,6 +787,80 @@
         "allow_additional_calls": { "type": "boolean", "default": true }
       }
     },
+    "ToolCallInputSourceUnknown": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "reason"],
+      "properties": {
+        "state": { "const": "unknown" },
+        "reason": {
+          "enum": [
+            "missing_source", "invalid_source_type", "invalid_json", "ambiguous_json",
+            "unsupported_surface"
+          ]
+        }
+      }
+    },
+    "ToolCallJsonValue": {
+      "oneOf": [
+        { "type": "null" },
+        { "type": "boolean" },
+        { "type": "number" },
+        { "type": "string" },
+        { "type": "array", "items": { "$ref": "#/$defs/ToolCallJsonValue" } },
+        { "type": "object", "additionalProperties": { "$ref": "#/$defs/ToolCallJsonValue" } }
+      ]
+    },
+    "ToolCallInputAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "exact": { "$ref": "#/$defs/ToolCallJsonValue" },
+        "any_of": {
+          "type": "array",
+          "minItems": 1,
+          "description": "At least one alternative must match. Duplicate alternatives are allowed.",
+          "items": { "$ref": "#/$defs/ToolCallJsonValue" }
+        },
+        "subset": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "$ref": "#/$defs/ToolCallJsonValue" }
+        },
+        "optional": { "type": "boolean", "default": false }
+      },
+      "oneOf": [
+        { "required": ["exact"] },
+        { "required": ["any_of"] },
+        { "required": ["subset"] }
+      ]
+    },
+    "ToolCallInputAssertions": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^\\$" },
+      "additionalProperties": { "$ref": "#/$defs/ToolCallInputAssertion" }
+    },
+    "ToolCallExpectedExecution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tool"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "tool": { "$ref": "#/$defs/ToolIdentity" },
+        "arguments": {
+          "$ref": "#/$defs/ToolCallInputAssertions",
+          "description": "Typed assertions on captured MCP Tool Arguments or OpenAPI GET requestArguments. OpenAPI arguments require an explicit GET requestMethod; no URL reconstruction or coercion."
+        },
+        "request_body": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["json"],
+          "properties": { "json": { "$ref": "#/$defs/ToolCallInputAssertions" } },
+          "description": "Interpret a captured OpenAPI POST requestPayload as JSON. MCP transport bodies are unsupported."
+        }
+      }
+    },
     "ToolCallExecutionOptions": {
       "type": "object",
       "additionalProperties": false,
@@ -620,8 +870,37 @@
           "type": "array",
           "minItems": 1,
           "description": "Expected tool executions. Repeating the same identity requires that many successful executions.",
-          "items": { "$ref": "#/$defs/ToolCallExpectedCall" }
+          "items": { "$ref": "#/$defs/ToolCallExpectedExecution" }
         }
+      }
+    },
+    "SkillDiscoveryOptions": {
+      "type": "object",
+      "description": "Options for the SkillDiscovery evaluator (Microsoft 365 Copilot plugin runs). Each expectation asserts whether a plugin skill was invoked. The verdict uses Developer Info skill executions; enabled/matched/selected stages are reported for diagnosis. Invocation counts even if execution later failed; unknown evidence yields skillEvidenceIndeterminate, never a fail.",
+      "additionalProperties": false,
+      "required": ["skills"],
+      "properties": {
+        "skills": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/SkillExpectation" }
+        }
+      }
+    },
+    "SkillExpectation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expected_skill_name", "expected_outcome"],
+      "anyOf": [
+        { "required": ["expected_plugin_id"] },
+        { "required": ["expected_plugin_name"] }
+      ],
+      "properties": {
+        "expected_plugin_id":   { "type": "string", "minLength": 1, "pattern": "\\S", "description": "Plugin package identity: the Microsoft 365 title ID (T_...) reported by Developer Info as the skill plugin.titleId, or plugin.id when titleId is absent. Preferred over name; compared case-insensitively." },
+        "expected_plugin_name": { "type": "string", "minLength": 1, "pattern": "\\S", "description": "Plugin display name; used only when expected_plugin_id is omitted." },
+        "expected_skill_name":  { "type": "string", "minLength": 1, "pattern": "\\S" },
+        "expected_outcome":     { "type": "string", "enum": ["executed", "not_executed"] },
+        "invocation_mode":      { "type": "string", "minLength": 1, "examples": ["implicit", "explicit"], "description": "Optional. When set, only executions with this invocation mode count. An execution that does not report its mode leaves the expectation indeterminate (skillEvidenceIndeterminate) unless another execution reports this mode." }
       }
     },
     "RetrievalQueryOptions": {

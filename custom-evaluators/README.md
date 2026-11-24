@@ -66,8 +66,8 @@ evaluator is an LLM judge; without it, it's code-only.
   start with a letter, then letters / digits / underscores).
 - Names must **not** collide with built-in evaluator names
   (case-insensitive): `Relevance`, `Coherence`, `Groundedness`,
-  `Similarity`, `ToolCallSelection`, `ToolCallExecution`, `Citations`, `ExactMatch`,
-  `PartialMatch`, `RetrievalQuery`, `RetrievalResult`. If you want a
+  `Similarity`, `ToolCallSelection`, `ToolCallExecution`, `SkillDiscovery`, `Citations`, `ExactMatch`,
+  `PartialMatch`, `RetrievalQuery`, `RetrievalResult`, `LLMRubric`. If you want a
   domain-tailored version of a built-in, prefix it — for example
   `domain_relevance` rather than `relevance`.
 
