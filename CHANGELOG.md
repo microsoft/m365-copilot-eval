@@ -1,5 +1,27 @@
 # Changelog
 
+## 2.0.0-preview2 (2026-11-24)
+
+
+### Features
+
+* **a2a:** handle interactive auth-required pauses
+* add LLM rubric evaluator
+* **cli:** identify the launcher in the WorkIQ User-Agent
+* **evals:** add SkillDiscovery evaluator (spec )
+* **evals:** gate SkillDiscovery behind EVALS_ENABLE_SKILL_DISCOVERY
+* evaluate tool call inputs
+* **logging:** log WorkIQ request and evaluator durations
+
+
+### Bug Fixes
+
+* **evals:** reject whitespace-only SkillDiscovery identities
+* **evaluators:** prefer optional context for Groundedness
+* **report:** improve HTML report Markdown rendering and navigation
+* resolve Azure Pipelines agent ID collision
+* run x64 Python under emulation on Windows ARM64
+
 ## 2.0.0-preview1 (2026-11-11)
 
 

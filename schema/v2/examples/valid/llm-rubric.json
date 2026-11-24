@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "2.0.0",
+  "default_evaluators": {
+    "LLMRubric": {
+      "threshold": 0.75,
+      "assertions": [
+        {
+          "text": "The response identifies Morgan as the review owner.",
+          "tags": ["review-workflow", "review-owner"],
+          "weight": 3
+        },
+        {
+          "text": "The response states that the review is on November 3.",
+          "tags": ["review-workflow", "review-date"],
+          "weight": 1
+        },
+        {
+          "text": "The response attributes the information to its source.",
+          "tags": ["review-workflow", "source-attribution"],
+          "weight": 1,
+          "anchors": [
+            {"rating": 0, "description": "No source attribution."},
+            {"rating": 1, "description": "Names the source but omits its URL."},
+            {"rating": 2, "description": "Names the source and includes its URL."}
+          ]
+        }
+      ]
+    }
+  },
+  "items": [
+    {
+      "prompt": "Who owns the review, when is it, and what is the source?",
+      "response": "Morgan owns the review. Source: Review plan (https://example.com/review)."
+    },
+    {
+      "prompt": "Who owns the review, when is it, and what is the source?",
+      "response": "Morgan owns the review. Source: Review plan."
+    }
+  ]
+}
